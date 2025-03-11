@@ -5,5 +5,8 @@ This Project was an assignment for class Project for class PV286 - Secure Coding
 Authors of this project are
 
 Matej Slivka - 555179@mail.muni.cz or matej.slivka33@gmail.com
+
 Zbynek - 569014@mail.muni.cz
+
 Jan - 572254@mail.muni.cz
+
