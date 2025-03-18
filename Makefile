@@ -45,10 +45,10 @@ $(OBJECT_FOLDER)/%.o: %.$(SUFFIX) $(HDR)
 .PHONY:  all build run clean zip docs
 .SILENT: docs clean zip
 
-all: docs build
+#all: docs build
 
-docs: $(SRC) $(HDR)
-	doxygen Doxyfile
+#docs: $(SRC) $(HDR)
+#	doxygen Doxyfile
 
 build: $(BINARY_PATH)
 

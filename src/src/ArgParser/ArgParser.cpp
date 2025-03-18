@@ -1,6 +1,13 @@
-//
-// Created by Pospes on 15.03.2025.
-//
+/**
+ * Project: PV286 2024/2025 Project
+ * @file ArgParser.cpp
+ * @author Pospíšil Zbyněk (xpospis)
+ * @brief Implementation of CLI argument parser
+ * @date 2025-03-15
+ *
+ * @copyright Copyright (c) 2025
+ *
+ */
 
 #include <string>
 #include <algorithm>
@@ -11,7 +18,7 @@
 using namespace std;
 
 
-/*
+/**
  * Prints help
  */
 void ArgParser::printHelp() {
@@ -21,17 +28,20 @@ void ArgParser::printHelp() {
 }
 
 
-/*
- * Checks if argument exists in the arglist
- */
+ /**
+  * Checks if argument exists in the arglist
+  * @param arg argument to check
+  * @return true if found, false if otherwise
+  */
 bool ArgParser::argExists(const string &arg) {
     return find(this->argList.begin(), this->argList.end(), arg) != this->argList.end();
 }
 
 
-
-/*
+/**
  * Detects if more than one args of the provided string exist
+ * @param arg argument to check
+ * @return true if multiples exist, false if otherwise
  */
 bool ArgParser::multipleArgsExist(const string &arg) {
     auto iter = find(this->argList.begin(), this->argList.end(), arg);
@@ -42,8 +52,9 @@ bool ArgParser::multipleArgsExist(const string &arg) {
 }
 
 
-/*
+/**
  * Checks if more than one key argument is entered
+ * @return true if multiples are found, false if otherwise
  */
 bool ArgParser::invalidKeyArgsAmount() {
     return multipleArgsExist("derive-key") ||
@@ -54,8 +65,9 @@ bool ArgParser::invalidKeyArgsAmount() {
 }
 
 
-/*
+/**
  * Checks that key arguments are 1st
+ * @return true if key args are correct, false if otherwise
  */
 bool ArgParser::invalidKeyArgsPosition() {
     return (argList.at(0) != "derive-key" && argList.at(0) != "key-expression" && argList.at(0) != "script-expression");
@@ -73,8 +85,11 @@ bool ArgParser::parseFilepath(const string &filepath) {
 }
 */
 
-/*
+
+/**
  * Returns derive-key args from CLI.
+ * @param tmpArgValueVector empty vector, which function fills with detected expressions
+ * @param filepath empty filepath, which function fills with detected filepath (if present)
  */
 void ArgParser::getDeriveKeyArgs(vector<string> *tmpArgValueVector, string *filepath) {
     if (tmpArgValueVector == nullptr || filepath == nullptr)
@@ -110,8 +125,9 @@ void ArgParser::getDeriveKeyArgs(vector<string> *tmpArgValueVector, string *file
 
 
 
-/*
+/**
  * Returns "key-expression" args from CLI.
+ * @param tmpArgValueVector empty vector, which function fills with detected expressions
  */
 void ArgParser::getKeyExpressionArgs(vector<string> *tmpArgValueVector) {
     if (tmpArgValueVector == nullptr)
@@ -141,8 +157,12 @@ void ArgParser::getKeyExpressionArgs(vector<string> *tmpArgValueVector) {
 }
 
 
-/*
+
+/**
  * Returns "script-expression" args from CLI.
+ * @param tmpArgValueVector empty vector, which function fills with detected expressions
+ * @param verifyChecksumFlag false by default, set to true if such argument is found
+ * @param computeChecksumFlag false by default, set to true if such argument is found
  */
 void ArgParser::getScriptExpressionArgs(vector<string> *tmpArgValueVector, bool *verifyChecksumFlag, bool *computeChecksumFlag) {
     if (tmpArgValueVector == nullptr || verifyChecksumFlag == nullptr || computeChecksumFlag == nullptr)
@@ -182,7 +202,9 @@ void ArgParser::getScriptExpressionArgs(vector<string> *tmpArgValueVector, bool 
 }
 
 
-
+/**
+ * Function parses derive-key command arguments
+ */
 void ArgParser::parseDeriveKey() {
     vector<string> tmpArgValueVector;
     string filepath;
@@ -194,6 +216,9 @@ void ArgParser::parseDeriveKey() {
     this->argValuesVector = tmpArgValueVector;
 }
 
+/**
+ * Function parses key-expression key command arguments
+ */
 void ArgParser::parseKeyExpression() {
     vector<string> tmpArgValueVector;
     getKeyExpressionArgs(&tmpArgValueVector);
@@ -203,6 +228,10 @@ void ArgParser::parseKeyExpression() {
     this->argValuesVector = tmpArgValueVector;
 }
 
+
+/**
+ * Function parses script-expression command arguments
+ */
 void ArgParser::parseScriptExpression() {
     vector<string> tmpArgValueVector;
     bool verifyChecksumFlag = false;
@@ -217,7 +246,9 @@ void ArgParser::parseScriptExpression() {
 
 
 
-
+/**
+ * The main function for parsing all CLI arguments
+ */
 void ArgParser::parse() {
 
     if (argList.size() < 2)
@@ -242,6 +273,21 @@ void ArgParser::parse() {
 }
 
 
+/**
+ * Public getter for parsed and validated argument values
+ * @return vector of argument values to perform operations on
+ */
+vector<string> ArgParser::getArgValues() {
+    return this->argList;
+}
+
+/**
+ * Public getter for parsed and validated filepath (if present)
+ * @return filepath if provided
+ */
+string ArgParser::returnFilepath() {
+    return this->argFilepath;
+}
 
 
 ArgParser::ArgParser(int argc, char **argv) {
@@ -251,6 +297,5 @@ ArgParser::ArgParser(int argc, char **argv) {
     for (const auto& arg : argList)
         cout << arg << endl;
     */
-    this->parse();
 }
 
