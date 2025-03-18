@@ -5,10 +5,10 @@
 
 int main(int argc, char *argv[]) {
 
-    ArgParser ArgParser(argc, argv);
+    ArgParser argParser(argc, argv);
 
     try {
-        ArgParser.parse();
+        argParser.parse();
     }
     catch (const invalid_argument &ex) {
         cerr << "[ERROR]: main: invalid_argument exception occured: " << ex.what() << endl;
@@ -20,16 +20,15 @@ int main(int argc, char *argv[]) {
     }
 
 
-    if (ArgParser.argExists("derive-key")) {
-        // doDeriveKeyThings(ArgParser.getArgValues(), ArgParser.returnFilepath());
+    if (argParser.argExists("derive-key")) {
+        // doDeriveKeyThings(argParser.getArgValues(), argParser.returnFilepath());
     }
-    else if (ArgParser.argExists("key-expression")) {
-        // doKeyExpressionThings(ArgParser.getArgValues(), ArgParser.returnFilepath());
+    else if (argParser.argExists("key-expression")) {
+        // doKeyExpressionThings(argParser.getArgValues(), argParser.returnFilepath());
     }
-    else if (ArgParser.argExists("script-expression")) {
-        // doScriptExpressionThings(ArgParser.getArgValues());
+    else if (argParser.argExists("script-expression")) {
+        // doScriptExpressionThings(argParser.getArgValues(), argParser.getVerifyChecksumFlag, argParser.getComputeChecksumFlag());
     }
-
 
 
     return 0;

@@ -285,10 +285,26 @@ vector<string> ArgParser::getArgValues() {
  * Public getter for parsed and validated filepath (if present)
  * @return filepath if provided
  */
-string ArgParser::returnFilepath() {
+string ArgParser::getFilepath() {
     return this->argFilepath;
 }
 
+
+/**
+ * Public getter for the VerifyChecksum flag
+ * @return true if argument is provided, false if otherwise
+ */
+bool ArgParser::getVerifyChecksumFlag() {
+    return this->verifyChecksumFlag;
+}
+
+/**
+ * Public getter for the ComputeChecksum flag
+ * @return true if argument is provided, false if otherwise
+ */
+bool ArgParser::getComputeChecksumFlag() {
+    return this->computeChecksumFlag;
+}
 
 ArgParser::ArgParser(int argc, char **argv) {
     for (int x = 1; x < argc; x++)

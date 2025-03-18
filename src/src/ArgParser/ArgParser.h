@@ -22,6 +22,8 @@ private:
 
     vector<string> argValuesVector;  // Vector of parsed output argument values (or expressions)
     string argFilepath;  // Contains the filepath from argument, if provided
+    bool verifyChecksumFlag = false;  // flag for script expressions
+    bool computeChecksumFlag = false;  // flag for script expressions
 
     void printHelp();
     bool multipleArgsExist(const string &arg);
@@ -45,8 +47,11 @@ public:
     ArgParser(int argc, char *argv[]);
     void parse();
     bool argExists(const string &arg);
+
     vector<string> getArgValues();
-    string returnFilepath();
+    string getFilepath();
+    bool getVerifyChecksumFlag();
+    bool getComputeChecksumFlag();
 };
 
 
