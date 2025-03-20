@@ -1,0 +1,45 @@
+# .gitlab-ci.yml
+image: ubuntu:20.04
+
+# Global configuration
+before_script:
+  - apt-get update -y
+  - apt-get install -y build-essential cmake libgtest-dev
+  # Manually build/install Google Test libraries 
+  # (Ubuntu's libgtest-dev only has source code, so we compile it):
+  - cd /usr/src/gtest
+  - cmake CMakeLists.txt
+  - make
+  # Move the resulting libs so the linker can find them
+  - mv lib/libgtest*.a /usr/lib
+  - cd $CI_PROJECT_DIR
+
+stages:
+  - build
+  - test
+
+# Build your main bip380 application 
+# (you could skip this if you only want to test code)
+build-job:
+  stage: build
+  script:
+    - make build
+  artifacts:
+    paths:
+      - obj/  # Save compiled .o files or binary for possible later usage
+
+# Build and run your GTest-based tests
+test-job:
+  stage: test
+  script:
+    # 1) Build the tests
+    - make test-build
+    # 2) Run the tests
+    - make test
+  # Optionally, you can collect test artifacts/logs:
+  artifacts:
+    when: always
+    paths:
+      - obj_test/
+    reports:
+      junit: report.xml  # If you produce a JUnit-style XML report, specify the file here.
