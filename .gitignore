@@ -34,5 +34,7 @@
 .idea/
 .vscode/
 
+bip380
+
 obj/
 obj_test
