@@ -8,7 +8,7 @@ stages:
 build-job:
   stage: build
   tags:
-    - shared-fi       # <--- This is where we use the 'shared-fi' tag.
+    - shared-fi
   script:
     - apt-get update && apt-get install -y build-essential
     - make build
@@ -16,9 +16,10 @@ build-job:
 test-job:
   stage: test
   tags:
-    - shared-fi       # <--- Also use the same tag for your test job
+    - shared-fi
   script:
-    - apt-get update && apt-get install -y build-essential libgtest-dev cmake
+    - apt-get update
+    - DEBIAN_FRONTEND=noninteractive TZ=UTC apt-get install -y --no-install-recommends build-essential libgtest-dev cmake tzdata
     - cd /usr/src/gtest && cmake . && make && mv lib/libgtest*.a /usr/lib && cd -
     - make test-build
     - make test
