@@ -1,0 +1,25 @@
+# .gitlab-ci.yml
+image: ubuntu:20.04
+
+stages:
+  - build
+  - test
+
+build-job:
+  stage: build
+  tags:
+    - shared-fi
+  script:
+    - apt-get update && apt-get install -y build-essential
+    - make build
+
+test-job:
+  stage: test
+  tags:
+    - shared-fi
+  script:
+    - apt-get update
+    - DEBIAN_FRONTEND=noninteractive TZ=UTC apt-get install -y --no-install-recommends build-essential libgtest-dev cmake tzdata
+    - cd /usr/src/gtest && cmake . && make && mv lib/libgtest*.a /usr/lib && cd -
+    - make test-build
+    - make test

@@ -1,62 +1,97 @@
-#!bin/sh
-# Project: PV286, used also in other autor's projects
-# Name: Makefile
+#! /bin/sh
+# Project: PV286 Secure Coding Makefile
 # Author: Pospíšil Zbyněk (xpospi0k)
-# Info: Makefile used for running the project.
-#		Recursively goes through all subfolders it can find and compiles the project into executable file.
-# Date: 2021-12-10
+# Date: 2025-03-20
 
-BINARY_NAME=bip380
 
-OUTPUT_FOLDER=.
-OBJECT_FOLDER=obj
-SOURCE_FOLDER=src
+BINARY_NAME         = bip380
+BINARY_PATH         = obj/$(BINARY_NAME)
+OUTPUT_FOLDER       = obj
+SOURCE_FOLDER       = src/app
 
-CC=g++
-CFLAGS=-std=c++17 -pedantic -Wall -Wextra -Werror -g
-SUFFIX=cpp
+CC                  = g++
+CFLAGS              = -std=c++17 -pedantic -Wall -Wextra -Werror -g
+RM                  = rm -rf
 
-ADDITIONAL_CLEANUP=docs
-RM=rm -rf
 
-BINARY_PATH=$(OUTPUT_FOLDER)/$(BINARY_NAME)
+rwildcard = $(foreach d,$(wildcard $(1)/*), \
+             $(call rwildcard,$d,$2) \
+             $(filter $(subst *,%,$2),$d))
 
-SRC_SUBFOLDERS=$(shell find $(SOURCE_FOLDER) -type d)
-$(CC)=$(CC) $(foreach DIR, $(SRC_SUBFOLDERS),-I $(DIR))
-vpath %.$(SUFFIX) $(SRC_SUBFOLDERS)
-vpath %.h $(SRC_SUBFOLDERS)
 
-rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+# Gather all .cpp files from src/app (and its subfolders),
+# then filter out main.cpp so we can compile them separately if needed.
 
-SRC = $(call rwildcard,$(SOURCE_FOLDER),*.$(SUFFIX))
-HDR = $(call rwildcard,$(SOURCE_FOLDER),*.h)
-OBJ = $(patsubst $(SOURCE_FOLDER)/%.$(SUFFIX), $(OBJECT_FOLDER)/%.o, $(SRC))
+APP_SOURCES_ALL = $(call rwildcard, $(SOURCE_FOLDER), *.cpp)
+# Exclude main.cpp from the normal object build, so we don't mix it with tests
+APP_SOURCES     = $(filter-out src/app/main.cpp, $(APP_SOURCES_ALL))
 
-$(BINARY_PATH) : $(OBJ)
-	@echo LINKING
-	@mkdir -p $(@D)
-	@$(CC) $(OBJ) -o $@ $(CFLAGS)
+# Convert each .cpp in APP_SOURCES into an .o in obj folder
+APP_OBJECTS     = $(patsubst src/app/%.cpp, obj/%.o, $(APP_SOURCES))
 
-$(OBJECT_FOLDER)/%.o: %.$(SUFFIX) $(HDR)
-	@echo COMPILING $<
-	@mkdir -p $(@D)
-	@$(CC)  $< -c -o $@ $(CFLAGS)
-
-.PHONY:  all build run clean zip docs
-.SILENT: docs clean zip
-
-#all: docs build
-
-#docs: $(SRC) $(HDR)
-#	doxygen Doxyfile
+# ---------------------------------------------------------
+#  MAIN APP
+# ---------------------------------------------------------
+all: build
 
 build: $(BINARY_PATH)
 
+$(BINARY_PATH): $(APP_OBJECTS)
+	@echo "LINKING APP -> $@"
+	@mkdir -p $(@D)
+	# Link all app objects plus main.cpp into the final binary
+	@$(CC) $(APP_OBJECTS) src/app/main.cpp -o $@ $(CFLAGS)
+
+# For each .cpp (excluded main.cpp) compile to .o
+obj/%.o: src/app/%.cpp
+	@echo "COMPILING APP -> $<"
+	@mkdir -p $(@D)
+	@$(CC) -c $< -o $@ $(CFLAGS)
+
+# ---------------------------------------------------------
+#  TESTS
+# ---------------------------------------------------------
+# Build a separate test binary in obj_test/Tests
+# This includes all .cpp in src/app except main.cpp (already excluded)
+# plus all .cpp in src/tests. 
+# Then link against Google Test.
+
+TEST_OUT_FOLDER     = obj_test
+TEST_BINARY         = Tests
+TEST_BINARY_PATH    = $(TEST_OUT_FOLDER)/$(TEST_BINARY)
+
+# Gather all .cpp in src/tests
+TEST_SOURCES        = $(call rwildcard, src/tests, *.cpp)
+# Combine them with the app sources (which already exclude main.cpp)
+ALL_TEST_SOURCES    = $(APP_SOURCES) $(TEST_SOURCES)
+
+TEST_CFLAGS         = -std=c++17 -pthread -g -Wall -Wextra
+GTEST_LIBS          = -lgtest
+
+# test: build test binary and then run it
+test: test-build
+	@echo "Running Google Tests..."
+	./$(TEST_BINARY_PATH)
+
+# Build only the test binary (don't run)
+test-build:
+	@echo "BUILDING TESTS -> $(TEST_BINARY_PATH)"
+	@mkdir -p $(TEST_OUT_FOLDER)
+	$(CC) $(TEST_CFLAGS) $(ALL_TEST_SOURCES) \
+	    -I /usr/include \
+	    -L /usr/lib/x86_64-linux-gnu \
+	    $(GTEST_LIBS) \
+	    -o $(TEST_BINARY_PATH)
+
+# ---------------------------------------------------------
+#  OTHER TARGETS
+# ---------------------------------------------------------
 clean:
-	$(RM) $(OBJECT_FOLDER)
+	$(RM) $(OUTPUT_FOLDER)
+	$(RM) $(TEST_OUT_FOLDER)
 	$(RM) $(BINARY_PATH)
+	$(RM) bip380
 	$(RM) packed.zip
-	$(RM) $(ADDITIONAL_CLEANUP)
 
 rel: clean build
 
