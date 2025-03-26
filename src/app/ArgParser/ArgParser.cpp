@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <iostream>
 #include <exception>
+#include <regex>
 #include "ArgParser.h"
 
 using namespace std;
@@ -87,6 +88,26 @@ bool ArgParser::parseFilepath(const string &filepath) {
 
 
 /**
+ * Check script name for correct format. All formats are avaialble in assignemnt
+ * ( https://gitlab.fi.muni.cz/pv286/projects/-/blob/main/2025-bip380/README.md )
+ * @param scriptName script name to be checked
+ * @return true script name matches known formats, false if otherwise
+ */
+bool ArgParser::parseScriptName(const string &scriptName) {
+//	TODO DOKONCIT
+/*
+    regex RAWRegex("^raw\\([0-9a-f]{8}\\)"); // "raw(deadbeef)#xxx" example
+    if (regex_search(scriptName, RAWRegex)) {
+        return true;
+    }
+    return false;
+    */
+    (void)scriptName;
+    return true;
+}
+
+
+/**
  * Returns derive-key args from CLI.
  * @param tmpArgValueVector empty vector, which function fills with detected expressions
  * @param filepath empty filepath, which function fills with detected filepath (if present)
@@ -135,7 +156,7 @@ void ArgParser::getKeyExpressionArgs(vector<string> *tmpArgValueVector) {
 
     string tmpArgValue;  // for CLI value
 
-    for (auto arg : argList) {
+    for (const auto& arg : argList) {
         if (arg == "key-expression") {
             continue;
         }
@@ -170,9 +191,15 @@ void ArgParser::getScriptExpressionArgs(vector<string> *tmpArgValueVector, bool 
 
     string tmpArgValue;  // for CLI value
 
-    for (auto arg : argList) {
+    for (const auto& arg : argList) {
         if (arg == "script-expression") {
             continue;
+        }
+        else if (!*verifyChecksumFlag && (arg == "--verify-checksum")) {
+            *verifyChecksumFlag = true;
+        }
+        else if (!*computeChecksumFlag && (arg == "--compute-checksum")) {
+            *computeChecksumFlag = true;
         }
         else if (tmpArgValue.empty() && arg != "-") {
             tmpArgValue = arg;
@@ -181,12 +208,6 @@ void ArgParser::getScriptExpressionArgs(vector<string> *tmpArgValueVector, bool 
             string line;
             while (getline(cin, line))
                 (*tmpArgValueVector).push_back(line);
-        }
-        else if (!*verifyChecksumFlag && (arg == "--verify-checksum")) {
-            *verifyChecksumFlag = true;
-        }
-        else if (!*computeChecksumFlag && (arg == "--compute-checksum")) {
-            *computeChecksumFlag = true;
         }
         else {
             throw invalid_argument("[ERROR]: getScriptExpressionArgs: unsupported argument");
@@ -200,6 +221,9 @@ void ArgParser::getScriptExpressionArgs(vector<string> *tmpArgValueVector, bool 
     if ((*tmpArgValueVector).empty())
         (*tmpArgValueVector).push_back(tmpArgValue);
 }
+
+
+
 
 
 /**
@@ -237,6 +261,11 @@ void ArgParser::parseScriptExpression() {
     bool verifyChecksumFlag = false;
     bool computeChecksumFlag = false;
     getScriptExpressionArgs(&tmpArgValueVector, &verifyChecksumFlag, &computeChecksumFlag);
+
+
+    for (const auto& value : tmpArgValueVector)
+        if (!parseScriptName(value))
+            throw invalid_argument("[ERROR]: parseDeriveKey: invalid value(s)");
 
     // todo parse tmpArgValueVector or throw exception
 

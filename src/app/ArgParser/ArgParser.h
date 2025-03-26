@@ -32,6 +32,7 @@ private:
     vector<string> readArgValuesFromCLI();
 
     bool parseFilepath(const string &filepath);
+    bool parseScriptName(const string &scriptName);
 
     //todo script expr args
 
