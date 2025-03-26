@@ -5,7 +5,7 @@
 
 
 BINARY_NAME         = bip380
-BINARY_PATH         = obj/$(BINARY_NAME)
+BINARY_PATH         = ./$(BINARY_NAME)
 OUTPUT_FOLDER       = obj
 SOURCE_FOLDER       = src/app
 

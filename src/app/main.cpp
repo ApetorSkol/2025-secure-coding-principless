@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "ArgParser/ArgParser.h"
-
+#include "ScriptExpression/ScriptExpression.h"
 
 int main(int argc, char *argv[]) {
 
@@ -27,7 +27,8 @@ int main(int argc, char *argv[]) {
         // doKeyExpressionThings(argParser.getArgValues(), argParser.returnFilepath());
     }
     else if (argParser.argExists("script-expression")) {
-        // doScriptExpressionThings(argParser.getArgValues(), argParser.getVerifyChecksumFlag, argParser.getComputeChecksumFlag());
+        ScriptExpression scriptExpression(argParser.getArgValues(), argParser.getVerifyChecksumFlag(), argParser.getComputeChecksumFlag());
+        scriptExpression.parse();
     }
 
 
