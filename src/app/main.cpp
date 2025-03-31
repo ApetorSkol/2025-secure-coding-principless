@@ -3,19 +3,37 @@
 #include "ArgParser/ArgParser.h"
 #include "ScriptExpression/ScriptExpression.h"
 
+
+
+/**
+ * Prints the explanatory string of an exception. If the exception is nested, recurses to print the explanatory string of the exception it holds.
+ * This function taken verbatim from https://en.cppreference.com/w/cpp/error/throw_with_nested reference
+ * @param ex exception with nested exceptions
+ * @param level level to show
+ */
+void print_exception(const exception& ex, int level =  0) {
+    cerr << string(level, ' ') << "exception: " << ex.what() << endl;
+    try {
+        rethrow_if_nested(ex);
+    }
+    catch (const exception& nestedException) {
+        print_exception(nestedException, level + 1);
+    }
+    catch (...) {}
+}
+
+
+
 int main(int argc, char *argv[]) {
 
-    ArgParser argParser(argc, argv);
+    ArgParser argParser;
 
     try {
+        argParser.loadArguments(argc, argv);
         argParser.parse();
     }
-    catch (const invalid_argument &ex) {
-        cerr << "[ERROR]: main: invalid_argument exception occured: " << ex.what() << endl;
-        return 1;
-    }
     catch (const exception &ex) {
-        cerr << "[ERROR]: main: general exception occured" << endl;
+        print_exception(ex);
         return 1;
     }
 
@@ -27,8 +45,8 @@ int main(int argc, char *argv[]) {
         // doKeyExpressionThings(argParser.getArgValues(), argParser.returnFilepath());
     }
     else if (argParser.argExists("script-expression")) {
-        ScriptExpression scriptExpression(argParser.getArgValues(), argParser.getVerifyChecksumFlag(), argParser.getComputeChecksumFlag());
-        scriptExpression.parse();
+        //ScriptExpression scriptExpression(argParser.getArgValues(), argParser.getComputeChecksumFlag(), argParser.getVerifyChecksumFlag());
+        //scriptExpression.parse();
     }
 
 
