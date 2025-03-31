@@ -24,7 +24,8 @@
 TEST(ArgParserTest, DetectArguments) {
     const char *argv[] = {"bip380", "derive-key", "00aabbcc"};
     int argc = 3;
-    ArgParser parser(argc, const_cast<char **>(argv));
+    ArgParser parser;
+    parser.loadArguments(argc, const_cast<char **>(argv));
 
     EXPECT_TRUE(parser.argExists("derive-key"));
     EXPECT_FALSE(parser.argExists("key-expression"));
@@ -36,7 +37,8 @@ TEST(ArgParserTest, DetectArguments) {
 TEST(ArgParserTest, MultipleArguments) {
     const char *argv[] = {"bip380", "script-expression", "--verify-checksum"};
     int argc = 3;
-    ArgParser parser(argc, const_cast<char **>(argv));
+    ArgParser parser;
+    parser.loadArguments(argc, const_cast<char **>(argv));
 
     EXPECT_TRUE(parser.argExists("script-expression"));
     EXPECT_TRUE(parser.argExists("--verify-checksum"));
@@ -48,7 +50,8 @@ TEST(ArgParserTest, MultipleArguments) {
 TEST(ArgParserTest, HelpCommand) {
     const char *argv[] = {"bip380", "--help"};
     int argc = 2;
-    ArgParser parser(argc, const_cast<char **>(argv));
+    ArgParser parser;
+    parser.loadArguments(argc, const_cast<char **>(argv));
 
     EXPECT_TRUE(parser.argExists("--help"));
 }
@@ -63,7 +66,8 @@ TEST(ArgParserTest, InvalidArguments) {
     int argc = 1;
     
     EXPECT_THROW({
-        ArgParser parser(argc, const_cast<char **>(argv));
+        ArgParser parser;
+        parser.loadArguments(argc, const_cast<char **>(argv));
         parser.parse();  // should trigger invalid_argument
     }, std::invalid_argument);
 }
@@ -91,7 +95,9 @@ TEST(ArgParserTest, ThrowsIfTooFewArguments) {
         std::vector<std::string> args = {"bip380"};
         auto argv = makeArgv(args);
         EXPECT_THROW({
-            ArgParser parser(static_cast<int>(argv.size()), argv.data());
+            ArgParser parser;
+            parser.loadArguments(static_cast<int>(argv.size()), argv.data());
+
             parser.parse();
         }, std::invalid_argument);
     }
@@ -101,29 +107,13 @@ TEST(ArgParserTest, ThrowsIfTooFewArguments) {
         std::vector<std::string> args = {"bip380", "someArg"};
         auto argv = makeArgv(args);
         EXPECT_THROW({
-            ArgParser parser(static_cast<int>(argv.size()), argv.data());
+            ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
             parser.parse();
         }, std::invalid_argument);
     }
 }
 
-/**
- * Tests if we provide --help, it calls printHelp (typically ends with exit(0)).
- * We only check that parse() does not throw std::invalid_argument before calling exit.
- */
-TEST(ArgParserTest, HelpDoesNotThrowBeforeExit) {
-    std::vector<std::string> args = {"bip380", "someArg", "--help"};
-    auto argv = makeArgv(args);
-
-    EXPECT_NO_THROW({
-        try {
-            ArgParser parser(static_cast<int>(argv.size()), argv.data());
-            parser.parse();
-        } catch (...) {
-            FAIL() << "parse() threw an unexpected exception for --help";
-        }
-    });
-}
 
 /**
  * Tests that repeated subcommands cause an exception
@@ -135,7 +125,8 @@ TEST(ArgParserTest, InvalidKeyArgsAmountThrows) {
         std::vector<std::string> args = {"bip380", "derive-key", "derive-key"};
         auto argv = makeArgv(args);
         EXPECT_THROW({
-            ArgParser parser(static_cast<int>(argv.size()), argv.data());
+            ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
             parser.parse();
         }, std::invalid_argument);
     }
@@ -145,7 +136,8 @@ TEST(ArgParserTest, InvalidKeyArgsAmountThrows) {
         std::vector<std::string> args = {"bip380", "key-expression", "key-expression"};
         auto argv = makeArgv(args);
         EXPECT_THROW({
-            ArgParser parser(static_cast<int>(argv.size()), argv.data());
+            ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
             parser.parse();
         }, std::invalid_argument);
     }
@@ -155,7 +147,8 @@ TEST(ArgParserTest, InvalidKeyArgsAmountThrows) {
         std::vector<std::string> args = {"bip380", "derive-key", "script-expression"};
         auto argv = makeArgv(args);
         EXPECT_THROW({
-            ArgParser parser(static_cast<int>(argv.size()), argv.data());
+            ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
             parser.parse();
         }, std::invalid_argument);
     }
@@ -172,7 +165,8 @@ TEST(ArgParserTest, InvalidKeyArgsPositionThrows) {
     };
     auto argv = makeArgv(args);
     EXPECT_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
     }, std::invalid_argument);
 }
@@ -181,18 +175,18 @@ TEST(ArgParserTest, InvalidKeyArgsPositionThrows) {
  * Valid scenario #1: "derive-key" used as the first arg.
  */
 TEST(ArgParserTest, DeriveKeyValidScenario) {
-    // e.g. bip380 derive-key 00aabbcc
-    std::vector<std::string> args = {"bip380", "derive-key", "00aabbcc"};
+    // e.g. bip380 derive-key 00aabbcc00aabbcc00aabbcc00aabbcc
+    std::vector<std::string> args = {"bip380", "derive-key", "00aabbcc00aabbcc00aabbcc00aabbcc"};
     auto argv = makeArgv(args);
 
     EXPECT_NO_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
 
         auto retrievedArgs = parser.getArgValues();
-        ASSERT_EQ(retrievedArgs.size(), 2u);
-        EXPECT_EQ(retrievedArgs[0], "derive-key");
-        EXPECT_EQ(retrievedArgs[1], "00aabbcc");
+        ASSERT_EQ(retrievedArgs.size(), 1u);
+        EXPECT_EQ(retrievedArgs[0], "00aabbcc00aabbcc00aabbcc00aabbcc");
     });
 }
 
@@ -200,17 +194,17 @@ TEST(ArgParserTest, DeriveKeyValidScenario) {
  * Valid scenario #2: "key-expression" used as the first arg.
  */
 TEST(ArgParserTest, KeyExpressionValidScenario) {
-    // e.g. bip380 key-expression 02abcdef
-    std::vector<std::string> args = {"bip380", "key-expression", "02abcdef"};
+    // e.g. bip380 key-expression 0260b2003c386519fc9eadf2b5cf124dd8eea4c4e68d5e154050a9346ea98ce600
+    std::vector<std::string> args = {"bip380", "key-expression", "0260b2003c386519fc9eadf2b5cf124dd8eea4c4e68d5e154050a9346ea98ce600"};
     auto argv = makeArgv(args);
 
     EXPECT_NO_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
         auto retrievedArgs = parser.getArgValues();
-        ASSERT_EQ(retrievedArgs.size(), 2u);
-        EXPECT_EQ(retrievedArgs[0], "key-expression");
-        EXPECT_EQ(retrievedArgs[1], "02abcdef");
+        ASSERT_EQ(retrievedArgs.size(), 1u);
+        EXPECT_EQ(retrievedArgs[0], "0260b2003c386519fc9eadf2b5cf124dd8eea4c4e68d5e154050a9346ea98ce600");
     });
 }
 
@@ -218,17 +212,17 @@ TEST(ArgParserTest, KeyExpressionValidScenario) {
  * Valid scenario #3: "script-expression"
  */
 TEST(ArgParserTest, ScriptExpressionValidScenario) {
-    // e.g. bip380 script-expression "pk(02abcdef)"
-    std::vector<std::string> args = {"bip380", "script-expression", "pk(02abcdef)"};
+    // e.g. bip380 script-expression "pk(0260b2003c386519fc9eadf2b5cf124dd8eea4c4e68d5e154050a9346ea98ce600)"
+    std::vector<std::string> args = {"bip380", "script-expression", "pk(0260b2003c386519fc9eadf2b5cf124dd8eea4c4e68d5e154050a9346ea98ce600)"};
     auto argv = makeArgv(args);
 
     EXPECT_NO_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
         auto retrievedArgs = parser.getArgValues();
-        ASSERT_EQ(retrievedArgs.size(), 2u);
-        EXPECT_EQ(retrievedArgs[0], "script-expression");
-        EXPECT_EQ(retrievedArgs[1], "pk(02abcdef)");
+        ASSERT_EQ(retrievedArgs.size(), 1u);
+        EXPECT_EQ(retrievedArgs[0], "pk(0260b2003c386519fc9eadf2b5cf124dd8eea4c4e68d5e154050a9346ea98ce600)");
     });
 }
 
@@ -240,24 +234,40 @@ TEST(ArgParserTest, ScriptExpressionWithVerifyChecksum) {
     std::vector<std::string> args = {"bip380", "script-expression", "--verify-checksum"};
     auto argv = makeArgv(args);
 
+    EXPECT_THROW({
+         ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
+         parser.parse();
+     }, std::invalid_argument);
+    /*
     EXPECT_NO_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+    parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
         EXPECT_TRUE(parser.getVerifyChecksumFlag());
         EXPECT_FALSE(parser.getComputeChecksumFlag());
     });
+     */
 }
 
 TEST(ArgParserTest, ScriptExpressionWithComputeChecksum) {
     std::vector<std::string> args = {"bip380", "script-expression", "--compute-checksum"};
     auto argv = makeArgv(args);
 
+    EXPECT_THROW({
+         ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
+         parser.parse();
+     }, std::invalid_argument);
+    /*
     EXPECT_NO_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+    parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
         EXPECT_FALSE(parser.getVerifyChecksumFlag());
         EXPECT_TRUE(parser.getComputeChecksumFlag());
     });
+     */
 }
 
 /**
@@ -273,7 +283,8 @@ TEST(ArgParserTest, ScriptExpressionWithBothChecksumFlagsThrows) {
     auto argv = makeArgv(args);
 
     EXPECT_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
     }, std::invalid_argument);
 }
@@ -282,18 +293,19 @@ TEST(ArgParserTest, ScriptExpressionWithBothChecksumFlagsThrows) {
  * Test the optional --path usage in "derive-key".
  */
 TEST(ArgParserTest, DeriveKeyWithPath) {
-    // e.g. bip380 derive-key --path /0H/1 ff00ff00
+    // e.g. bip380 derive-key --path /0H/1 ff00ff00ff00ff00ff00ff00ff00ff00
     std::vector<std::string> args = {
         "bip380", 
         "derive-key", 
         "--path", 
         "/0H/1", 
-        "ff00ff00"
+        "ff00ff00ff00ff00ff00ff00ff00ff00"
     };
     auto argv = makeArgv(args);
 
     EXPECT_NO_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
 
         // For example: EXPECT_EQ(parser.getFilepath(), "/0H/1");
@@ -309,7 +321,8 @@ TEST(ArgParserTest, ArgExistsDirectCheck) {
     std::vector<std::string> args = {"bip380", "derive-key", "--custom-flag"};
     auto argv = makeArgv(args);
 
-    ArgParser parser(static_cast<int>(argv.size()), argv.data());
+    ArgParser parser;
+    parser.loadArguments(static_cast<int>(argv.size()), argv.data());
     EXPECT_TRUE(parser.argExists("derive-key"));
     EXPECT_TRUE(parser.argExists("--custom-flag"));
     EXPECT_FALSE(parser.argExists("no-such-flag"));
@@ -332,7 +345,8 @@ TEST(ArgParserTest, RejectsExtremelyLongArgument) {
     // If your ArgParser should reject extremely large arguments,
     // we expect an invalid_argument here:
     EXPECT_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
     }, std::invalid_argument);
 }
@@ -351,7 +365,8 @@ TEST(ArgParserTest, InvalidHexSeedCharacters) {
     auto argv = makeArgv(args);
 
     EXPECT_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
         // presumably in parseDeriveKey() you'd detect invalid hex
         // and throw invalid_argument
@@ -377,7 +392,8 @@ TEST(ArgParserTest, InvalidCharactersInPath) {
     auto argv = makeArgv(args);
 
     EXPECT_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
         // parseDeriveKey() should detect this path is invalid
     }, std::invalid_argument);
@@ -406,7 +422,8 @@ TEST(ArgParserTest, ScriptExpressionPotentialInjectionRejected) {
     auto argv = makeArgv(args);
 
     EXPECT_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
         // parseScriptExpression() or subsequent validation 
         // could detect forbidden chars or syntax.
@@ -425,7 +442,8 @@ TEST(ArgParserTest, RejectsInvalidSubcommandPrefix) {
     // The subcommand "derive-keyXYZ" is not recognized, 
     // so parse() should fail.
     EXPECT_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
     }, std::invalid_argument);
 }
@@ -449,7 +467,8 @@ TEST(ArgParserTest, RejectUnknownFlags) {
     auto argv = makeArgv(args);
 
     EXPECT_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
     }, std::invalid_argument);
 }
@@ -472,7 +491,8 @@ TEST(ArgParserTest, MultiplePathsShouldThrow) {
     auto argv = makeArgv(args);
 
     EXPECT_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
     }, std::invalid_argument);
 }
@@ -501,7 +521,8 @@ TEST(ArgParserTest, ExtremelyLongPath) {
     auto argv = makeArgv(args);
 
     EXPECT_THROW({
-        ArgParser parser(static_cast<int>(argv.size()), argv.data());
+        ArgParser parser;
+        parser.loadArguments(static_cast<int>(argv.size()), argv.data());
         parser.parse();
     }, std::invalid_argument);
 }

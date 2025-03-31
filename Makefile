@@ -22,12 +22,14 @@ rwildcard = $(foreach d,$(wildcard $(1)/*), \
 # Gather all .cpp files from src/app (and its subfolders),
 # then filter out main.cpp so we can compile them separately if needed.
 
-APP_SOURCES_ALL = $(call rwildcard, $(SOURCE_FOLDER), *.cpp)
+APP_SOURCES_CPP = $(call rwildcard, $(SOURCE_FOLDER), *.cpp)
+APP_SOURCES_C = $(call rwildcard, $(SOURCE_FOLDER), *.c)
+APP_SOURCES_ALL = $(APP_SOURCES_CPP) $(APP_SOURCES_C)
 # Exclude main.cpp from the normal object build, so we don't mix it with tests
-APP_SOURCES     = $(filter-out src/app/main.cpp, $(APP_SOURCES_ALL))
+APP_SOURCES_NOMAIN     = $(filter-out src/app/main.cpp, $(APP_SOURCES_ALL))
 
 # Convert each .cpp in APP_SOURCES into an .o in obj folder
-APP_OBJECTS     = $(patsubst src/app/%.cpp, obj/%.o, $(APP_SOURCES))
+APP_OBJECTS     = $(patsubst src/app/%.cpp, obj/%.o, $(APP_SOURCES_NOMAIN))
 
 # ---------------------------------------------------------
 #  MAIN APP
@@ -37,14 +39,13 @@ all: build
 build: $(BINARY_PATH)
 
 $(BINARY_PATH): $(APP_OBJECTS)
-	@echo "LINKING APP -> $@"
+	@echo "LINKING -> $@"
 	@mkdir -p $(@D)
-	# Link all app objects plus main.cpp into the final binary
 	@$(CC) $(APP_OBJECTS) src/app/main.cpp -o $@ $(CFLAGS)
 
 # For each .cpp (excluded main.cpp) compile to .o
 obj/%.o: src/app/%.cpp
-	@echo "COMPILING APP -> $<"
+	@echo "COMPILING -> $<"
 	@mkdir -p $(@D)
 	@$(CC) -c $< -o $@ $(CFLAGS)
 
@@ -63,7 +64,7 @@ TEST_BINARY_PATH    = $(TEST_OUT_FOLDER)/$(TEST_BINARY)
 # Gather all .cpp in src/tests
 TEST_SOURCES        = $(call rwildcard, src/tests, *.cpp)
 # Combine them with the app sources (which already exclude main.cpp)
-ALL_TEST_SOURCES    = $(APP_SOURCES) $(TEST_SOURCES)
+ALL_TEST_SOURCES    = $(APP_SOURCES_NOMAIN) $(TEST_SOURCES)
 
 TEST_CFLAGS         = -std=c++17 -pthread -g -Wall -Wextra
 GTEST_LIBS          = -lgtest
