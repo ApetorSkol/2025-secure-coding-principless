@@ -2,6 +2,7 @@
 
 #include "ArgParser/ArgParser.h"
 #include "ScriptExpression/ScriptExpression.h"
+#include "KeyExpression/KeyExpression.h"
 
 
 
@@ -42,7 +43,7 @@ int main(int argc, char *argv[]) {
         // doDeriveKeyThings(argParser.getArgValues(), argParser.returnFilepath());
     }
     else if (argParser.argExists("key-expression")) {
-        // doKeyExpressionThings(argParser.getArgValues(), argParser.returnFilepath());
+        runKeyExpression(argParser.getArgValues());
     }
     else if (argParser.argExists("script-expression")) {
         //ScriptExpression scriptExpression(argParser.getArgValues(), argParser.getComputeChecksumFlag(), argParser.getVerifyChecksumFlag());
