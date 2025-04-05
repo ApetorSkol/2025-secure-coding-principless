@@ -121,7 +121,8 @@ void ArgParser::parseDeriveKeyValue(const string &value) {
     const regex valueRegex("^((\\d|[a-f]|[A-F]){2}(\\s?|\\t?)){16,64}$");
 
     smatch matches;
-    if (!regex_match(value, matches, valueRegex))
+    if (!regex_match(value, matches, valueRegex) &&
+        !regex_match(value, matches, regex(PURE_PRIVATE_KEYS_REGEX)))
         throw invalid_argument("[ERROR]: parseDeriveKeyValue: invalid key value");
 
 }
