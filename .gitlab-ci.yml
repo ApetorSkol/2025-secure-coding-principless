@@ -1,16 +1,29 @@
-# .gitlab-ci.yml
-image: ubuntu:20.04
+image: buildpack-deps:focal
 
 stages:
   - build
   - test
+
+variables:
+  BTC_LIB_DIR: "/usr/local"
+
+before_script:
+  - apt-get update
+  - apt-get install -y cmake libtool autoconf pkg-config git libgtest-dev
+  - git clone https://github.com/libbtc/libbtc.git /tmp/libbtc
+  - cd /tmp/libbtc
+  - ./autogen.sh
+  - ./configure --prefix=$BTC_LIB_DIR
+  - make -j$(nproc)
+  - make install
+  - cd $CI_PROJECT_DIR
+  - echo "libbtc installed!"
 
 build-job:
   stage: build
   tags:
     - shared-fi
   script:
-    - apt-get update && apt-get install -y build-essential
     - make build
 
 test-job:
@@ -18,8 +31,11 @@ test-job:
   tags:
     - shared-fi
   script:
-    - apt-get update
-    - DEBIAN_FRONTEND=noninteractive TZ=UTC apt-get install -y --no-install-recommends build-essential libgtest-dev cmake tzdata
-    - cd /usr/src/gtest && cmake . && make && mv lib/libgtest*.a /usr/lib && cd -
+    - cd /usr/src/gtest
+    - cmake .
+    - make
+    - cp lib/*.a /usr/lib
+    - cd $CI_PROJECT_DIR
     - make test-build
+    - export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
     - make test

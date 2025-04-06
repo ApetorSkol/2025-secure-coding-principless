@@ -1,5 +1,9 @@
 #include <gtest/gtest.h>
 
+extern "C" {
+    #include <btc/ecc.h>
+    }
+
 /**
  * main() for Google Test. 
  * If you already have a testing entry point elsewhere,
@@ -7,5 +11,8 @@
  */
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    btc_ecc_start();
+    int result = RUN_ALL_TESTS();
+    btc_ecc_stop();
+    return result;
 }

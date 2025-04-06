@@ -3,6 +3,9 @@
 # Author: Pospíšil Zbyněk (xpospi0k)
 # Date: 2025-03-20
 
+INCLUDE_DIRS = -I/usr/local/include
+LIB_DIRS     = -L/usr/local/lib
+LIBS         = -lbtc
 
 BINARY_NAME         = bip380
 BINARY_PATH         = ./$(BINARY_NAME)
@@ -41,7 +44,7 @@ build: $(BINARY_PATH)
 $(BINARY_PATH): $(APP_OBJECTS)
 	@echo "LINKING -> $@"
 	@mkdir -p $(@D)
-	@$(CC) $(APP_OBJECTS) src/app/main.cpp -o $@ $(CFLAGS)
+	@$(CC) $(APP_OBJECTS) src/app/main.cpp -o $@ $(CFLAGS) $(INCLUDE_DIRS) $(LIB_DIRS) $(LIBS)
 
 # For each .cpp (excluded main.cpp) compile to .o
 obj/%.o: src/app/%.cpp
@@ -82,6 +85,7 @@ test-build:
 	    -I /usr/include \
 	    -L /usr/lib/x86_64-linux-gnu \
 	    $(GTEST_LIBS) \
+	    -lbtc \
 	    -o $(TEST_BINARY_PATH)
 
 # ---------------------------------------------------------

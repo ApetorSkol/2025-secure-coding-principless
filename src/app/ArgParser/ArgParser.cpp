@@ -13,6 +13,7 @@
 #include <iostream>
 #include <limits>
 #include <iomanip>
+#include <unistd.h>
 #include <cstring>
 
 #include "ArgParser.h"
@@ -114,7 +115,7 @@ string ArgParser::sha256(const string &value) {
  * @param value value to be checked
  */
 void ArgParser::parseDeriveKeyValue(const string &value) {
-    const regex valueRegex("^((\\d|[a-f]|[A-F]){2}(\\s?|\\t?)){16,64}$");
+    const regex valueRegex("^(([0-9a-fA-F]{2})([ \t]*)){16,64}$");
 
     smatch matches;
     if (!regex_match(value, matches, valueRegex) &&
@@ -505,15 +506,23 @@ void ArgParser::parseDeriveKey() {
     }
 
     try {
-        for (const auto &value : tmpArgValueVector)
+        for (const auto &value : tmpArgValueVector) {
+            string trimmed = value;
+            trimmed.erase(remove_if(trimmed.begin(), trimmed.end(), ::isspace), trimmed.end());
+            if (trimmed.empty())
+                continue;
+
             parseDeriveKeyValue(value);
+        }
     }
     catch (exception &ex) {
         throw_with_nested(invalid_argument("[ERROR]: parseDeriveKey: invalid value(s)"));
     }
 
+    this->argFilepath = filepath;
     this->argValuesVector = tmpArgValueVector;
 }
+
 
 
 /**
@@ -561,19 +570,21 @@ void ArgParser::parseScriptExpression() {
  * The main function for parsing all CLI arguments
  */
 void ArgParser::parse() {
-
-    if (argList.size() < 2)
-        throw invalid_argument("Invalid number of arguments. (>2 needed)");
-
     if (argExists("--help"))
         printHelp();
+        
+    bool pipedInput = (isatty(fileno(stdin)) == 0);
+
+    if (argList.empty() || 
+        (!argExists("-") && argList.size() < 2 && !pipedInput)) {
+        throw invalid_argument("Invalid number of arguments. (>2 needed or missing '-')");
+    }
 
     if (invalidKeyArgsAmount())
         throw invalid_argument("Invalid number of key arguments");
 
     if (invalidKeyArgsPosition())
         throw invalid_argument("First argument must be key-argument");
-
 
     if (argExists("derive-key"))
         parseDeriveKey();
