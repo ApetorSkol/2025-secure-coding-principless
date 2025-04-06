@@ -10,17 +10,16 @@
  */
 
 #include <string>
-#include <algorithm>
 #include <iostream>
-#include <exception>
-#include <regex>
 #include <limits>
 #include <iomanip>
+#include <cstring>
 
 #include "ArgParser.h"
 #include "crypto-encode/base58.h"
 #include "crypto-encode/hex.h"
 #include "crypto-hash/sha256.h"
+#include "../Utility/StringUtilities.h"
 
 
 using namespace std;
@@ -36,9 +35,7 @@ void ArgParser::printHelp() {
 }
 
 
-
-
- /**
+/**
   * Checks if argument exists in the arglist
   * @param arg argument to check
   * @return true if found, false if otherwise
@@ -106,7 +103,6 @@ string ArgParser::sha256(const string &value) {
 }
 
 
-
 /**
  * Parses the provided key value.
  *
@@ -128,7 +124,7 @@ void ArgParser::parseDeriveKeyValue(const string &value) {
 }
 
 
- /**
+/**
   * Parses the provided filepath, returns false if invalid, true if all good.
   *
   * The {path} value is a sequence of /NUM and /NUMh, where NUM is from the range [0,...,2^31-1] as described in BIP 32.
@@ -161,7 +157,6 @@ void ArgParser::parseFilepath(const string &filepath) {
 }
 
 
-
 /**
  * Converts WIF key to PK via base58 decoding. NOTE, that the fist byte is not dropped, as it should be
  * @param WIFKey WIF key to be converted
@@ -183,7 +178,6 @@ string ArgParser::WIFToPrivateKey(const string &WIFKey) {
 
     return convertedString;
 }
-
 
 
 /**
@@ -241,81 +235,143 @@ void ArgParser::parseKeyExpressionValue(const string &value) {
 }
 
 
+/**
+ * Check whether string matches pkh expression
+ * @param string str to be checked
+ * @return true if matches, else returns false
+ */
+bool ArgParser::checkPkhExpression(string str, string checksumRegex){
+    const regex PkhRegex("^ *" + PKH_REGEX + checksumRegex + "$");
+    return regex_match(str, PkhRegex);
+}
+
+
+/**
+ * Check whether string matches pk expression
+ * @param string str to be checked
+ * @return true if matches, else returns false
+ */
+bool ArgParser::checkPkExpression(string str, string checksumRegex){
+    const regex PkRegex("^ *" + PK_REGEX + checksumRegex + "$");
+    return regex_match(str, PkRegex);
+}
+
+
+/**
+ * Check whether string matches multi expression. This function also checks whether first k number is greater then number of provided keys.
+ * @param string str to be checked
+ * @return true if matches, else returns false
+ */
+bool ArgParser::checkMultiExpression(string str, string checksumRegex){
+    const regex MultiRegex("^ *" + MULTI_REGEX + checksumRegex + "$");
+    if (!regex_match(str, MultiRegex)) {
+        return false;
+    }
+
+    str = StringUtilities::removeWhiteCharacters(str);
+    str = StringUtilities::stripFirstSubstring(str, "multi(");
+    str = StringUtilities::stripLastSubstring(str, ")");
+    vector<string> tokens = StringUtilities::split(str, ",");
+    unsigned long int size = tokens.size() - 1;
+    unsigned long int k;
+        try{
+            k = stoi(tokens[0]);
+        }
+        catch (exception &ex) {
+            cerr << "Stoi() invalid conversion of" << tokens[0] << endl;
+        }
+
+    if (size < k ){
+        return false;
+    }
+
+    return true;
+}
+
+
+/**
+ * Check whether string matches sh(multi()) or sh(pk()) or sh(pkh()) expression
+ * @param string str to be checked
+ * @return true if matches, else returns false
+ */
+bool ArgParser::checkShExpression(string str, string checksumRegex){
+    const regex ShMultiRegex("^ *" + SH_MULTI_REGEX + checksumRegex + "$");
+    const regex ShPkRegex("^ *" + SH_PK_REGEX + checksumRegex + "$");
+    const regex ShPkhRegex("^ *" + SH_PKH_REGEX + checksumRegex + "$");
+
+    if (regex_match(str, ShPkRegex) ||
+        regex_match(str, ShPkhRegex)
+        ) {
+        return true;
+        }
+
+    if (regex_match(str, ShMultiRegex)){
+        str = StringUtilities::removeWhiteCharacters(str);
+        str = StringUtilities::stripFirstSubstring(str, "sh(multi(");
+        str = StringUtilities::stripLastSubstring(str, ")");
+        vector<string> tokens = StringUtilities::split(str, ",");
+        unsigned long int size = tokens.size() - 1;
+        unsigned long int k;
+        try{
+            k = stoi(tokens[0]);
+        }
+        catch (exception &ex) {
+            cerr << "Stoi() invalid conversion of" << tokens[0] << endl;
+        }
+
+        if (size < k ){
+            return false;
+        }
+        return true;
+    }
+
+    return false;
+}
+
+
+/**
+ * Check whether string matches raw expression
+ * @param string str to be checked
+ * @return true if matches, else returns false
+ */
+bool ArgParser::checkRawExpression(string str, string checksumRegex){
+    const regex RawRegex("^ *" + RAW_REGEX + checksumRegex + "$");
+    return regex_match(str, RawRegex);
+}
+
 
 /**
  * Parses the values provided in script-expression
  * @param value value to be checked
  */
-void ArgParser::parseScriptExpressionValue(const string &value) {
-    const regex pkRegex("^" + PK_REGEX + CHECKSUM_REGEX + "$");
-    const regex pkhRegex("^" + PKH_REGEX + CHECKSUM_REGEX + "$");
-    const regex multiRegex("^" + MULTI_REGEX + CHECKSUM_REGEX + "$");
-    const regex shPkRegex("^" + SH_PK_REGEX + CHECKSUM_REGEX + "$");
-    const regex shPkhRegex("^" + SH_PKH_REGEX + CHECKSUM_REGEX + "$");
-    const regex shMultiRegex("^" + SH_MULTI_REGEX + CHECKSUM_REGEX + "$");
-    const regex rawRegex("^" + RAW_REGEX + CHECKSUM_REGEX + "$");
-
-    const string singleValueFilterRegexLeft = "\\((\\s|\\t)*";
-    const string singleValueFilterRegexRight = "(\\s|\\t)*\\)";
-
-    smatch matches;
-    if (regex_match(value, matches, pkRegex) ||
-            regex_match(value, matches, pkhRegex) ||
-            regex_match(value, matches, shPkRegex) ||
-            regex_match(value, matches, shPkhRegex)) {
-        if (regex_search(value, matches, regex(singleValueFilterRegexLeft + SIMPLE_KEY_EXPRESSION_VALUE_REGEX + singleValueFilterRegexRight)) ||
-                regex_search(value, matches, regex(singleValueFilterRegexLeft + WIF_REGEX + singleValueFilterRegexRight)) ||
-                regex_search(value, matches, regex(singleValueFilterRegexLeft + EXTENDED_PRIVATE_KEYS_REGEX + singleValueFilterRegexRight))) {
-            parseKeyExpressionValue(matches[0].str().substr(1, matches[0].length() - 1));  // also eliminating parentheses
-        }
+void ArgParser::parseScriptExpressionValue(string value) {
+      // check for correct handling of script expression based on provided flags
+    string checksumRegex = CHECKSUM_REGEX + "?"; // if no flags are provided then the checksumis just optional part but must have correct length
+    if (this->getComputeChecksumFlag()){
+      	// if computeChecksum is provided ,then checksum is completely optional
+        size_t position = value.find("#");
+		// If it contain '#', then the rest after it can be anything
+		if (position != string::npos) {
+			checksumRegex = "#.*?";
+		}
+        // if it does not contain '#', then the CHECKSUM is not present and expression must match the whole string
         else {
-            throw invalid_argument("[ERROR]: parseScriptExpressionValue: value(s) match no known script-expression regex");
+            checksumRegex = "";
         }
     }
-    else if (regex_match(value, matches, multiRegex) ||
-            regex_match(value, matches, shMultiRegex)) {
-        regex_search(value, matches, regex("\\d+"));
-        string argAmountStr = matches[0];
-        unsigned long caughtKeys = 0;  // for verification that the provided number matches the amount of values provided
-        const regex simpleKeyIteratorRegex(SIMPLE_KEY_EXPRESSION_VALUE_REGEX);
-        const regex WIFIteratorRegex(WIF_REGEX);
-        const regex extendedPrivateKeyIteratorRegex(SIMPLE_KEY_EXPRESSION_VALUE_REGEX);
-        const sregex_token_iterator end;
-        // go through every possible combination, as values can be any of these
-        for (sregex_token_iterator iter(value.begin(), value.end(), simpleKeyIteratorRegex, 0); iter != end; iter++) {
-            caughtKeys++;
-            parseKeyExpressionValue(iter->str());
-        }
-        for (sregex_token_iterator iter(value.begin(), value.end(), WIFIteratorRegex, 0); iter != end; iter++) {
-            caughtKeys++;
-            parseKeyExpressionValue(iter->str());
-        }
-        for (sregex_token_iterator iter(value.begin(), value.end(), extendedPrivateKeyIteratorRegex, 0); iter != end; iter++) {
-            caughtKeys++;
-            parseKeyExpressionValue(iter->str());
-        }
-        // compare number of caught key values to the actual number provided
-        try {
-            unsigned long numBuffer = stoul(argAmountStr);
-            if (numBuffer != caughtKeys)
-                throw out_of_range("[ERROR]: parseScriptExpressionValue: number of values and provided number differs");
-        }
-        catch (const out_of_range &e) {
-            throw_with_nested(invalid_argument("[ERROR]: parseScriptExpressionValue: stoul failed"));
-        }
-        // dynamic regex for final format checking
-        const regex finalFormatRegexCheck("\\((\\s|\\t)*\\d+(\\s|\\t)*(,(\\s|\\t)*(" + SIMPLE_KEY_EXPRESSION_VALUE_REGEX + "|" + WIF_REGEX + "|" + EXTENDED_PRIVATE_KEYS_REGEX + ")(\\s|\\t)*){" + to_string(caughtKeys) + "}\\)" + CHECKSUM_REGEX);
-        if (!regex_search(value, matches, finalFormatRegexCheck))
-            throw invalid_argument("[ERROR]: parseScriptExpressionValue: final formatting regex failed, invalid internal formatting");
+    if (this->getVerifyChecksumFlag()){
+        checksumRegex = CHECKSUM_REGEX; // if verifyChecksum is provided ,then checksum is mandatory
     }
-    else if (regex_match(value, matches, rawRegex)) {
-        return;
-    }
-    else {
-        throw invalid_argument("[ERROR]: parseScriptExpressionValue: value(s) match no known regex");
-    }
-}
 
+    if (!checkPkExpression(value, checksumRegex) && //pk(KEY)
+        !checkPkhExpression(value, checksumRegex) && //pkh(KEY)
+        !checkMultiExpression(value, checksumRegex) &&//multi(k, KEY_1, KEY_2, ..., KEY_n)
+        !checkShExpression(value, checksumRegex) &&// sh(pk(KEY)) or sh(pkh(KEY)) or sh(multi(k, KEY_1, KEY_2, ..., KEY_n))
+        !checkRawExpression(value, checksumRegex) //raw(HEX)
+        ) {
+            throw invalid_argument("[ERROR]: parseScriptExpressionValue: value(s) match no known regex");
+        }
+}
 
 
 /**
@@ -355,8 +411,6 @@ void ArgParser::getDeriveKeyArgs(vector<string> *tmpArgValueVector, string *file
 }
 
 
-
-
 /**
  * Returns "key-expression" args from CLI.
  * @param tmpArgValueVector empty vector, which function fills with detected expressions
@@ -387,7 +441,6 @@ void ArgParser::getKeyExpressionArgs(vector<string> *tmpArgValueVector) {
     if ((*tmpArgValueVector).empty())
         (*tmpArgValueVector).push_back(tmpArgValue);
 }
-
 
 
 /**
@@ -493,7 +546,7 @@ void ArgParser::parseScriptExpression() {
     getScriptExpressionArgs(&tmpArgValueVector, &verifyChecksumFlag, &computeChecksumFlag);
 
     try {
-        for (const auto &value : tmpArgValueVector)
+        for (auto value : tmpArgValueVector)
             parseScriptExpressionValue(value);
     }
     catch (exception &ex) {
@@ -502,8 +555,6 @@ void ArgParser::parseScriptExpression() {
 
     this->argValuesVector = tmpArgValueVector;
 }
-
-
 
 
 /**
@@ -541,6 +592,7 @@ vector<string> ArgParser::getArgValues() {
     return this->argValuesVector;
 }
 
+
 /**
  * Public getter for parsed and validated filepath (if present)
  * @return filepath if provided
@@ -558,6 +610,7 @@ bool ArgParser::getVerifyChecksumFlag() const {
     return this->verifyChecksumFlag;
 }
 
+
 /**
  * Public getter for the ComputeChecksum flag
  * @return true if argument is provided, false if otherwise
@@ -565,7 +618,6 @@ bool ArgParser::getVerifyChecksumFlag() const {
 bool ArgParser::getComputeChecksumFlag() const {
     return this->computeChecksumFlag;
 }
-
 
 
 void ArgParser::loadArguments(int argc, char **argv) {
@@ -579,6 +631,3 @@ void ArgParser::loadArguments(int argc, char **argv) {
 
 
 ArgParser::ArgParser() = default;
-
-
-

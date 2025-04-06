@@ -46,10 +46,9 @@ int main(int argc, char *argv[]) {
         runKeyExpression(argParser.getArgValues());
     }
     else if (argParser.argExists("script-expression")) {
-        //ScriptExpression scriptExpression(argParser.getArgValues(), argParser.getComputeChecksumFlag(), argParser.getVerifyChecksumFlag());
-        //scriptExpression.parse();
+        ScriptExpression scriptExpression(argParser.getArgValues(), argParser.getComputeChecksumFlag(), argParser.getVerifyChecksumFlag());
+        scriptExpression.parse();
     }
-
 
     return 0;
 }
