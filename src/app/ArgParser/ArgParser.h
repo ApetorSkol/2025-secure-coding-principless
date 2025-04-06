@@ -13,6 +13,7 @@
 #pragma once
 
 #include <vector>
+#include <regex>
 
 using namespace std;
 
@@ -23,16 +24,15 @@ const string WIF_REGEX = KEY_ORIGIN_REGEX + "5([0-9]|[a-z]|[A-Z]){50}";
 const string EXTENDED_PRIVATE_KEYS_REGEX = KEY_ORIGIN_REGEX + "(xprv|xpub)[1-9A-HJ-NP-Za-km-z]{20,111}(\\/\\d+(H|h|')?)*(\\/\\*)?";   // todo 20-111 uncertain, path elements to check int limits??
 const string PURE_PRIVATE_KEYS_REGEX = "(xprv|xpub)[1-9A-HJ-NP-Za-km-z]{20,111}";
 
-const string CHECKSUM_REGEX = "(#[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{8})?";
+const string CHECKSUM_REGEX = "(#[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{8})";
 
-const string PK_REGEX = "(pk(\\s|\\t)*\\(.+\\))";
-const string PKH_REGEX = "(pkh(\\s|\\t)*\\(.+\\))";
-const string MULTI_REGEX = "(multi(\\s|\\t)*\\((\\s|\\t)*\\d+(\\s|\\t)*,.+\\))";
-const string SH_PK_REGEX = "(sh(\\s|\\t)*\\((\\s|\\t)*" + PK_REGEX + "(\\s|\\t)*\\))";
-const string SH_PKH_REGEX = "(sh(\\s|\\t)*\\((\\s|\\t)*" + PKH_REGEX + "(\\s|\\t)*\\))";
-const string SH_MULTI_REGEX = "(sh(\\s|\\t)*\\((\\s|\\t)*" + MULTI_REGEX + "(\\s|\\t)*\\))";
-const string RAW_REGEX = "(raw(\\s|\\t)*\\((\\d|[a-f]|[A-F]|\\s|\\t)+\\))";
-
+const string PK_REGEX = "pk\\( *((" + SIMPLE_KEY_EXPRESSION_VALUE_REGEX + ")|(" + WIF_REGEX + ")|(" + EXTENDED_PRIVATE_KEYS_REGEX + ")) *\\) *";
+const string PKH_REGEX = "pkh\\( *((" + SIMPLE_KEY_EXPRESSION_VALUE_REGEX + ")|(" + WIF_REGEX + ")|(" + EXTENDED_PRIVATE_KEYS_REGEX + ")) *\\) *";
+const string MULTI_REGEX = "multi\\( *\\d+ *( *, *( *(" + SIMPLE_KEY_EXPRESSION_VALUE_REGEX + ")|(" + WIF_REGEX + ")|(" + EXTENDED_PRIVATE_KEYS_REGEX + ") *) *)*\\) *";
+const string SH_PK_REGEX = "sh\\( *" + PK_REGEX + " *\\) *";
+const string SH_PKH_REGEX = "sh\\( *" + PKH_REGEX + " *\\) *";
+const string SH_MULTI_REGEX = "sh\\( *" + MULTI_REGEX + " *\\) *";
+const string RAW_REGEX = "raw\\((\\d|[a-f]|[A-F]| )+\\) *";
 
 
 class ArgParser {
@@ -54,7 +54,13 @@ private:
     static string WIFToPrivateKey(const string &WIFKey);
     static void checkWIFChecksum(const string &WIFKey);
     static void parseKeyExpressionValue(const string &value);
-    static void parseScriptExpressionValue(const string &value);
+    void parseScriptExpressionValue(string value);
+
+    bool checkPkExpression(string str, string checksumRegex);
+    bool checkPkhExpression(string str, string checksumRegex);
+    bool checkMultiExpression(string str, string checksumRegex);
+    bool checkShExpression(string str, string checksumRegex);
+    bool checkRawExpression(string str, string checksumRegex);
 
     void getDeriveKeyArgs(vector<string> *tmpArgValueVector, string *filepath);
     void getKeyExpressionArgs(vector<string> *tmpArgValueVector);
@@ -77,5 +83,3 @@ public:
 
 
 };
-
-
