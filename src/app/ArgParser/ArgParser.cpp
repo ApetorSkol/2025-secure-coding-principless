@@ -22,6 +22,11 @@
 #include "crypto-hash/sha256.h"
 #include "../Utility/StringUtilities.h"
 
+extern "C"
+{
+#include <btc/bip32.h>
+}
+
 
 using namespace std;
 
@@ -30,7 +35,7 @@ using namespace std;
  * Prints help
  */
 void ArgParser::printHelp() {
-    cout << "Help printed" << endl;
+    cout << "derive-key {value} [--path {path}] [-]    - Depending on the type of the input {value} the utility outputs certain extended keys.\n\nkey-expression {expr} [-]     - parses the {expr} according to the BIP 380 Key Expressions specification. If there are no parsing errors, the key expression is echoed back on a single line with 0 exit code. Otherwise, the utility errors out with a non-zero exit code and descriptive message.\n\nscript-expression {expr} [-]  - sub-command implements parsing of some of the script expressions and optionally also checksum verification and calculation.\n\n--help   	- prints help and exits out" << endl;
 
     exit(0);
 }
@@ -221,13 +226,25 @@ void ArgParser::parseKeyExpressionValue(const string &value) {
     }
     else if (regex_match(value, matches, WIFRegex)) {
         try {
-            checkWIFChecksum(value);
+          	string noSquareBrackets = value;
+            if (value.find(']') != string::npos ) {
+                noSquareBrackets = StringUtilities::split(value, "]")[1];
+            }
+            checkWIFChecksum(noSquareBrackets);
         }
         catch (exception &ex) {
             throw_with_nested(invalid_argument("[ERROR]: parseKeyExpressionValue: checkWIFChecksum failed"));
         }
     }
     else if (regex_match(value, matches, extendedPrivateKeys)) {
+        btc_hdnode node;
+        static btc_chainparams *chain = (btc_chainparams *)&btc_chainparams_main;
+
+        if (!btc_hdnode_deserialize(value.c_str(), chain, &node))
+        {
+            throw invalid_argument("[ERROR]: parseKeyExpressionValue: invalid extended key");
+        }
+
         return;
     }
     else {
@@ -243,7 +260,12 @@ void ArgParser::parseKeyExpressionValue(const string &value) {
  */
 bool ArgParser::checkPkhExpression(string str, string checksumRegex){
     const regex PkhRegex("^ *" + PKH_REGEX + checksumRegex + "$");
-    return regex_match(str, PkhRegex);
+    smatch matches;
+    if (regex_match(str, matches, PkhRegex)){
+        parseKeyExpressionValue(matches[1].str());
+        return true;
+    }
+    return false;
 }
 
 
@@ -254,6 +276,11 @@ bool ArgParser::checkPkhExpression(string str, string checksumRegex){
  */
 bool ArgParser::checkPkExpression(string str, string checksumRegex){
     const regex PkRegex("^ *" + PK_REGEX + checksumRegex + "$");
+    smatch matches;
+    if (regex_match(str, matches, PkRegex)){
+        parseKeyExpressionValue(matches[1].str());
+        return true;
+    }
     return regex_match(str, PkRegex);
 }
 
@@ -279,11 +306,17 @@ bool ArgParser::checkMultiExpression(string str, string checksumRegex){
             k = stoi(tokens[0]);
         }
         catch (exception &ex) {
-            cerr << "Stoi() invalid conversion of" << tokens[0] << endl;
+            throw invalid_argument("[ERROR]: checkMultiExpression: Stoi() invalid conversion of " + tokens[0]);
         }
 
     if (size < k ){
         return false;
+    }
+
+    // check valid keys
+    for (unsigned int i = 1; i < tokens.size() ; i++) {
+        string noHashTag = StringUtilities::split(tokens[i], "#")[0];
+        parseKeyExpressionValue(noHashTag);
     }
 
     return true;
@@ -300,16 +333,18 @@ bool ArgParser::checkShExpression(string str, string checksumRegex){
     const regex ShPkRegex("^ *" + SH_PK_REGEX + checksumRegex + "$");
     const regex ShPkhRegex("^ *" + SH_PKH_REGEX + checksumRegex + "$");
 
-    if (regex_match(str, ShPkRegex) ||
-        regex_match(str, ShPkhRegex)
+    smatch matches;
+    if (regex_match(str, matches, ShPkRegex) ||
+        regex_match(str, matches, ShPkhRegex)
         ) {
+        parseKeyExpressionValue(matches[1].str());
         return true;
         }
 
     if (regex_match(str, ShMultiRegex)){
         str = StringUtilities::removeWhiteCharacters(str);
         str = StringUtilities::stripFirstSubstring(str, "sh(multi(");
-        str = StringUtilities::stripLastSubstring(str, ")");
+        str = StringUtilities::stripLastSubstring(str, "))");
         vector<string> tokens = StringUtilities::split(str, ",");
         unsigned long int size = tokens.size() - 1;
         unsigned long int k;
@@ -317,12 +352,20 @@ bool ArgParser::checkShExpression(string str, string checksumRegex){
             k = stoi(tokens[0]);
         }
         catch (exception &ex) {
-            cerr << "Stoi() invalid conversion of" << tokens[0] << endl;
+            throw invalid_argument("[ERROR]: checkMultiExpression: Stoi() invalid conversion of " + tokens[0]);
         }
 
         if (size < k ){
             return false;
         }
+
+
+        // check valid keys
+        for (unsigned int i = 1; i < tokens.size() ; i++) {
+            string noHashTag = StringUtilities::split(tokens[i], "#")[0];
+            parseKeyExpressionValue(noHashTag);
+        }
+
         return true;
     }
 
@@ -349,12 +392,12 @@ void ArgParser::parseScriptExpressionValue(string value) {
       // check for correct handling of script expression based on provided flags
     string checksumRegex = CHECKSUM_REGEX + "?"; // if no flags are provided then the checksumis just optional part but must have correct length
     if (this->getComputeChecksumFlag()){
-      	// if computeChecksum is provided ,then checksum is completely optional
+        // if computeChecksum is provided ,then checksum is completely optional
         size_t position = value.find("#");
-		// If it contain '#', then the rest after it can be anything
-		if (position != string::npos) {
-			checksumRegex = "#.*?";
-		}
+        // If it contain '#', then the rest after it can be anything
+        if (position != string::npos) {
+            checksumRegex = "(#.*?)";
+        }
         // if it does not contain '#', then the CHECKSUM is not present and expression must match the whole string
         else {
             checksumRegex = "";

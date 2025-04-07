@@ -598,7 +598,7 @@ TEST(ScriptExpressionTest, InvalidOperatorPk) {
 
 
 
-TEST(ArgParserTest, validTabSpace7) {
+TEST(ArgParserTest, validSpace) {
     std::vector<std::string> args = {
             "bip380",
             "script-expression",
@@ -859,7 +859,7 @@ TEST(ArgParserTest, foreignChars) {
                  }, invalid_argument);
 }
 
-/*
+
 TEST(ArgParserTest, invalidWIF) {
     std::vector<std::string> args = {
             "bip380",
@@ -874,7 +874,7 @@ TEST(ArgParserTest, invalidWIF) {
                         parser.parse();
                     }, invalid_argument);
 }
-*/
+
 
 /*
 TEST(ArgParserTest, dangerousArgc) {

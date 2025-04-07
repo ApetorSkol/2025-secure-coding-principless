@@ -545,8 +545,24 @@ TEST(ScriptExpressionTest, ReallyLongChecksumAndMultipleHashes) {
 /**
  * Tests duplicate expressions
  */
-TEST(ScriptExpressionTest, duplicatedExpression) {
+TEST(ScriptExpressionTest, duplicatedExpressionRaw) {
     const char *argv[] = {"bip380", "script-expression", "--compute-checksum",  "raw(deadbeef)raw(deadbeef)"};
+    int argc = 4;
+    EXPECT_THROW({
+    	ArgParser argParser;
+    	argParser.loadArguments(argc, const_cast<char **>(argv));
+    	argParser.parse();
+
+    	ScriptExpression scriptExpression(argParser.getArgValues(), argParser.getComputeChecksumFlag(), argParser.getVerifyChecksumFlag());
+	    scriptExpression.parse();
+    }, invalid_argument);
+}
+
+/**
+ * Tests duplicate expressions
+ */
+TEST(ScriptExpressionTest, duplicatedExpression) {
+    const char *argv[] = {"bip380", "script-expression", "--compute-checksum",  "raw(deadbeef)sh(multi(0, xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8))"};
     int argc = 4;
     EXPECT_THROW({
     	ArgParser argParser;
