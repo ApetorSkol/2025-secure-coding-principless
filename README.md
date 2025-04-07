@@ -139,6 +139,8 @@ The parser itself is split into two main parts. The first (functions as `getDeri
 
 The second part (mainly functions `parseDeriveKeyValue`, `parseKeyExpressionValue` and `parseScriptExpressionValue`) is used for checking the validity of said arguments. This incorporates multiple regexes, which check the basic format, function `stol` for checking the number limits in filepath and function `checkWIFChecksum`, which checks the validity of WIF keys. The validity of private keys, public keys and checking their checksum is however implemented in their corresponding classes.
 
+For safety reasons, the maximum length of single argument cannot exceed 1000 characters.
+
 
 
 
