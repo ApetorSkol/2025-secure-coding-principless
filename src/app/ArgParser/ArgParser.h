@@ -21,7 +21,7 @@ const string KEY_ORIGIN_REGEX = "(\\[(\\d|[a-f]|[A-F]){8}(\\/\\dh?)*\\])?";
 
 const string SIMPLE_KEY_EXPRESSION_VALUE_REGEX = KEY_ORIGIN_REGEX + R"(((02|03)(\d|[a-f]|[A-F]){64})|((04)(\d|[a-f]|[A-F]){128}))";
 const string WIF_REGEX = KEY_ORIGIN_REGEX + "5([0-9]|[a-z]|[A-Z]){50}";
-const string EXTENDED_PRIVATE_KEYS_REGEX = KEY_ORIGIN_REGEX + "(xprv|xpub)[1-9A-HJ-NP-Za-km-z]{20,111}(\\/\\d+(H|h|')?)*(\\/\\*)?";   // todo 20-111 uncertain, path elements to check int limits??
+const string EXTENDED_PRIVATE_KEYS_REGEX = KEY_ORIGIN_REGEX + "(xprv|xpub)[1-9A-HJ-NP-Za-km-z]{20,111}(\\/\\d+(H|h|')?)*(\\/\\*)?";
 const string PURE_PRIVATE_KEYS_REGEX = "(xprv|xpub)[1-9A-HJ-NP-Za-km-z]{20,111}";
 
 const string CHECKSUM_REGEX = "(#[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{8})";

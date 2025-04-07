@@ -443,7 +443,8 @@ void ArgParser::getDeriveKeyArgs(vector<string> *tmpArgValueVector, string *file
         else if ((*tmpArgValueVector).empty() && *iter == "-") {
             string line;
             while (getline(cin, line))
-                (*tmpArgValueVector).push_back(line);
+                if (!line.empty())
+                    (*tmpArgValueVector).push_back(line);
         }
         else {
             throw invalid_argument("[ERROR]: getDeriveKeyArgs: unsupported argument");
@@ -549,14 +550,8 @@ void ArgParser::parseDeriveKey() {
     }
 
     try {
-        for (const auto &value : tmpArgValueVector) {
-            string trimmed = value;
-            trimmed.erase(remove_if(trimmed.begin(), trimmed.end(), ::isspace), trimmed.end());
-            if (trimmed.empty())
-                continue;
-
+        for (const auto &value : tmpArgValueVector)
             parseDeriveKeyValue(value);
-        }
     }
     catch (exception &ex) {
         throw_with_nested(invalid_argument("[ERROR]: parseDeriveKey: invalid value(s)"));
@@ -582,7 +577,6 @@ void ArgParser::parseKeyExpression() {
     catch (exception &ex) {
         throw_with_nested(invalid_argument("[ERROR]: parseKeyExpression: parseKeyExpressionValue failed"));
     }
-    // todo unicode values?
 
     this->argValuesVector = tmpArgValueVector;
 }
@@ -598,7 +592,7 @@ void ArgParser::parseScriptExpression() {
     getScriptExpressionArgs(&tmpArgValueVector, &verifyChecksumFlag, &computeChecksumFlag);
 
     try {
-        for (auto value : tmpArgValueVector)
+        for (const auto &value : tmpArgValueVector)
             parseScriptExpressionValue(value);
     }
     catch (exception &ex) {
@@ -613,15 +607,12 @@ void ArgParser::parseScriptExpression() {
  * The main function for parsing all CLI arguments
  */
 void ArgParser::parse() {
+
     if (argExists("--help"))
         printHelp();
-        
-    bool pipedInput = (isatty(fileno(stdin)) == 0);
 
-    if (argList.empty() || 
-        (!argExists("-") && argList.size() < 2 && !pipedInput)) {
-        throw invalid_argument("Invalid number of arguments. (>2 needed or missing '-')");
-    }
+    if (argList.size() < 2)
+        throw invalid_argument("Invalid number of arguments (>2 needed)");
 
     if (invalidKeyArgsAmount())
         throw invalid_argument("Invalid number of key arguments");
