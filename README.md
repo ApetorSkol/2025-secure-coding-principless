@@ -84,6 +84,19 @@ sudo make install
 
 ## Key expression
 
+The implementation of key-expression logic can be found in KeyExpression/KeyExpression.cpp. The code simply repeats the arguments, that are given to it. 
+Parsing and validating of the arguments is handled by the class ArgParser, which implements hex-encoded public keys, WIF keys and extended public and private keys. 
+
+All these examples are checked with regex patterns. Note, that checking the WIF keys utilizes 3rd party library crypto-encode (available from: https://github.com/Safeheron/crypto-encode-cpp) and crypto-hash (available from: https://github.com/Safeheron/crypto-hash-cpp).
+
+Example usage:
+
+```bash
+$ ./bip380 key-expression 5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ
+5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ
+```
+
+
 ## Script expression
 The script-expression sub-command implements parsing of script expressions and their checksums.
 Correct format of argument is `SCRIPT#CHECKSUM` where `CHECKSUM` is 8 character long checksum of script. Script formats are as follows:
@@ -115,6 +128,19 @@ Lastly you can provide `[-]`. If a single dash `'-'` parameter is present, it in
 **Note2:** Spaces differ the behaviour of application. `raw(deadbeef)` is not same as `raw( deadbeef )` 
 
 For examples of application, you can check tests [folder](/src/tests/ScriptExpressionTest.cpp).
+
+
+
+## Argument Parser
+
+Parsing of the arguments happens in the class ArgParser. This class handles argument loading, parsing and, partially, subsequent validation. Communication with the class happens through public methods. Implemented functions are annotated with Doxygen-ready comments, thrown errors are handles as nested exceptions (and printed in `main.cpp`).
+
+The parser itself is split into two main parts. The first (functions as `getDeriveKeyArgs`, `getKeyExpressionArgs` and `getScriptExpressionArgs`) retrieves the arguments and stores them into vector of string values. These functions handle correct number of required arguments, missing values, or loading from `stdin`.
+
+The second part (mainly functions `parseDeriveKeyValue`, `parseKeyExpressionValue` and `parseScriptExpressionValue`) is used for checking the validity of said arguments. This incorporates multiple regexes, which check the basic format, function `stol` for checking the number limits in filepath and function `checkWIFChecksum`, which checks the validity of WIF keys. The validity of private keys, public keys and checking their checksum is however implemented in their corresponding classes.
+
+
+
 
 # Authors
 Authors of this project are
