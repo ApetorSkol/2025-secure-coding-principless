@@ -34,7 +34,11 @@
 .idea/
 .vscode/
 
-bip380
+# assignments require binary to be there
+#bip380
 
 obj/
 obj_test
+
+#libbtc library
+libbtc/

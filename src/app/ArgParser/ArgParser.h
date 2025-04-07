@@ -28,7 +28,7 @@ const string CHECKSUM_REGEX = "(#[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{8})";
 
 const string PK_REGEX = "pk\\( *((" + SIMPLE_KEY_EXPRESSION_VALUE_REGEX + ")|(" + WIF_REGEX + ")|(" + EXTENDED_PRIVATE_KEYS_REGEX + ")) *\\) *";
 const string PKH_REGEX = "pkh\\( *((" + SIMPLE_KEY_EXPRESSION_VALUE_REGEX + ")|(" + WIF_REGEX + ")|(" + EXTENDED_PRIVATE_KEYS_REGEX + ")) *\\) *";
-const string MULTI_REGEX = "multi\\( *\\d+ *( *, *( *(" + SIMPLE_KEY_EXPRESSION_VALUE_REGEX + ")|(" + WIF_REGEX + ")|(" + EXTENDED_PRIVATE_KEYS_REGEX + ") *) *)*\\) *";
+const string MULTI_REGEX = "multi\\(( *\\d+ *( *, *( *(" + SIMPLE_KEY_EXPRESSION_VALUE_REGEX + ")|(" + WIF_REGEX + ")|(" + EXTENDED_PRIVATE_KEYS_REGEX + ") *) *)*\\) *)";
 const string SH_PK_REGEX = "sh\\( *" + PK_REGEX + " *\\) *";
 const string SH_PKH_REGEX = "sh\\( *" + PKH_REGEX + " *\\) *";
 const string SH_MULTI_REGEX = "sh\\( *" + MULTI_REGEX + " *\\) *";
