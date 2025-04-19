@@ -3,8 +3,9 @@
 # Author: Pospíšil Zbyněk (xpospi0k)
 # Date: 2025-03-20
 
-INCLUDE_DIRS = -I/usr/local/include
-LIB_DIRS     = -L/usr/local/lib
+# xmikusek: add build from local libbtc build
+INCLUDE_DIRS = -I$(shell pwd)/libbtc/root/include -I/usr/local/include
+LIB_DIRS     = -L$(shell pwd)/libbtc/root/lib -L/usr/local/lib
 LIBS         = -lbtc
 
 BINARY_NAME         = bip380
@@ -13,7 +14,8 @@ OUTPUT_FOLDER       = obj
 SOURCE_FOLDER       = src/app
 
 CC                  = g++
-CFLAGS              = -std=c++17 -pedantic -Wall -Wextra -Werror -g
+# xmikusek: make build static
+CFLAGS              = -std=c++17 -pedantic -Wall -Wextra -Werror -g -static
 RM                  = rm -rf
 
 
@@ -39,7 +41,15 @@ APP_OBJECTS     = $(patsubst src/app/%.cpp, obj/%.o, $(APP_SOURCES_NOMAIN))
 # ---------------------------------------------------------
 all: build
 
-build: $(BINARY_PATH)
+# xmikusek: add build from local libbtc build
+libbtc:
+	git clone https://github.com/libbtc/libbtc.git
+	cd libbtc ; ./autogen.sh
+	mkdir -p libbtc/root
+	cd libbtc ; ./configure --prefix=$(shell pwd)/libbtc/root
+	cd libbtc ; make install
+
+build: $(BINARY_PATH) libbtc
 
 $(BINARY_PATH): $(APP_OBJECTS)
 	@echo "LINKING -> $@"
@@ -50,7 +60,8 @@ $(BINARY_PATH): $(APP_OBJECTS)
 obj/%.o: src/app/%.cpp
 	@echo "COMPILING -> $<"
 	@mkdir -p $(@D)
-	@$(CC) -c $< -o $@ $(CFLAGS)
+# xmikusek: add build from local libbtc build
+	@$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDE_DIRS) $(LIB_DIRS) $(LIBS)
 
 # ---------------------------------------------------------
 #  TESTS
