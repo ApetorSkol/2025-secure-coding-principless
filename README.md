@@ -47,7 +47,7 @@ xpub...:xprv...
 
 ### Installation instructions for `libbtc`
 
-Derive-key uses the C library [`libbtc`](https://github.com/libbtc/libbtc) to perform BIP32 derivation. You can install it manually or rely on the CI pipeline which builds it automatically.
+Derive-key uses the C library [`libbtc`](https://github.com/libbtc/libbtc) to perform BIP32 derivation. You can install it manually or rely on the `makefile` which builds it automatically.
 
 #### Manual installation (Linux/macOS)
 

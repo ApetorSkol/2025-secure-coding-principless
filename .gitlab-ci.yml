@@ -26,7 +26,7 @@ build-job:
   script:
     - make build
 
-test-job:
+unit-test-job:
   stage: test
   tags:
     - shared-fi
@@ -39,3 +39,12 @@ test-job:
     - make test-build
     - export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
     - make test
+
+integration-test-job:
+  stage: test
+  tags:
+    - shared-fi
+  script:
+    - cd src/tests
+    - chmod +x integration_tests.sh
+    - ./integration_tests.sh
