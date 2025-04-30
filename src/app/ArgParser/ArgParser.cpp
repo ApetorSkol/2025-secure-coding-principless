@@ -35,7 +35,16 @@ using namespace std;
  * Prints help
  */
 void ArgParser::printHelp() {
-    cout << "derive-key {value} [--path {path}] [-]    - Depending on the type of the input {value} the utility outputs certain extended keys.\n\nkey-expression {expr} [-]     - parses the {expr} according to the BIP 380 Key Expressions specification. If there are no parsing errors, the key expression is echoed back on a single line with 0 exit code. Otherwise, the utility errors out with a non-zero exit code and descriptive message.\n\nscript-expression {expr} [-]  - sub-command implements parsing of some of the script expressions and optionally also checksum verification and calculation.\n\n--help   	- prints help and exits out" << endl;
+    cout << "derive-key {value} [--path {path}] [-]    - Depending on the type of the input {value} the utility outputs certain extended keys." << endl;
+    cout << endl;
+    cout << endl;
+    cout << "key-expression {expr} [-]     - parses the {expr} according to the BIP 380 Key Expressions specification. If there are no parsing errors, the key expression is echoed back on a single line with 0 exit code. Otherwise, the utility errors out with a non-zero exit code and descriptive message." << endl;
+    cout << endl;
+    cout << endl;
+    cout << "script-expression {expr} [-]  - sub-command implements parsing of some of the script expressions and optionally also checksum verification and calculation." << endl;
+    cout << endl;
+    cout << endl;
+    cout << "--help   	- prints help and exits out" << endl;
 
     exit(0);
 }
@@ -300,8 +309,8 @@ bool ArgParser::checkMultiExpression(string str, string checksumRegex){
     str = StringUtilities::stripFirstSubstring(str, "multi(");
     str = StringUtilities::stripLastSubstring(str, ")");
     vector<string> tokens = StringUtilities::split(str, ",");
-    unsigned long int size = tokens.size() - 1;
-    unsigned long int k;
+    size_t size = tokens.size() - 1;
+    size_t k;
         try{
             k = stoi(tokens[0]);
         }
@@ -314,7 +323,7 @@ bool ArgParser::checkMultiExpression(string str, string checksumRegex){
     }
 
     // check valid keys
-    for (unsigned int i = 1; i < tokens.size() ; i++) {
+    for (size_t i = 1; i < tokens.size() ; i++) {
         string noHashTag = StringUtilities::split(tokens[i], "#")[0];
         parseKeyExpressionValue(noHashTag);
     }
@@ -346,8 +355,8 @@ bool ArgParser::checkShExpression(string str, string checksumRegex){
         str = StringUtilities::stripFirstSubstring(str, "sh(multi(");
         str = StringUtilities::stripLastSubstring(str, "))");
         vector<string> tokens = StringUtilities::split(str, ",");
-        unsigned long int size = tokens.size() - 1;
-        unsigned long int k;
+        size_t size = tokens.size() - 1;
+        size_t k;
         try{
             k = stoi(tokens[0]);
         }
@@ -361,7 +370,7 @@ bool ArgParser::checkShExpression(string str, string checksumRegex){
 
 
         // check valid keys
-        for (unsigned int i = 1; i < tokens.size() ; i++) {
+        for (size_t i = 1; i < tokens.size() ; i++) {
             string noHashTag = StringUtilities::split(tokens[i], "#")[0];
             parseKeyExpressionValue(noHashTag);
         }
@@ -667,8 +676,8 @@ bool ArgParser::getComputeChecksumFlag() const {
 
 void ArgParser::loadArguments(int argc, char **argv) {
     for (int x = 1; x < argc; x++) {
-        if (strlen(argv[x]) > 1000)
-            throw invalid_argument("[ERROR]: ArgParser: argument too large (bigger than 1000 characters)");
+        if (strlen(argv[x]) > 3000)
+            throw invalid_argument("[ERROR]: ArgParser: argument too large (bigger than 3000 characters)");
 
         this->argList.emplace_back(argv[x]);
     }

@@ -45,6 +45,7 @@ integration-test-job:
   tags:
     - shared-fi
   script:
+    - make
     - cd src/tests
     - chmod +x integration_tests.sh
     - ./integration_tests.sh
