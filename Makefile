@@ -3,7 +3,6 @@
 # Author: Pospíšil Zbyněk (xpospi0k)
 # Date: 2025-03-20
 
-# xmikusek: add build from local libbtc build
 INCLUDE_DIRS = -I$(shell pwd)/libbtc/root/include -I/usr/local/include
 LIB_DIRS     = -L$(shell pwd)/libbtc/root/lib -L/usr/local/lib
 LIBS         = -lbtc
@@ -14,7 +13,6 @@ OUTPUT_FOLDER       = obj
 SOURCE_FOLDER       = src/app
 
 CC                  = g++
-# xmikusek: make build static
 CFLAGS              = -std=c++17 -pedantic -Wall -Wextra -Werror -g -static
 RM                  = rm -rf
 
@@ -41,7 +39,6 @@ APP_OBJECTS     = $(patsubst src/app/%.cpp, obj/%.o, $(APP_SOURCES_NOMAIN))
 # ---------------------------------------------------------
 all: build
 
-# xmikusek: add build from local libbtc build
 libbtc:
 	git clone https://github.com/libbtc/libbtc.git
 	cd libbtc ; ./autogen.sh
@@ -60,7 +57,6 @@ $(BINARY_PATH): $(APP_OBJECTS)
 obj/%.o: src/app/%.cpp
 	@echo "COMPILING -> $<"
 	@mkdir -p $(@D)
-# xmikusek: add build from local libbtc build
 	@$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDE_DIRS) $(LIB_DIRS) $(LIBS)
 
 # ---------------------------------------------------------
@@ -68,7 +64,7 @@ obj/%.o: src/app/%.cpp
 # ---------------------------------------------------------
 # Build a separate test binary in obj_test/Tests
 # This includes all .cpp in src/app except main.cpp (already excluded)
-# plus all .cpp in src/tests. 
+# plus all .cpp in src/tests.
 # Then link against Google Test.
 
 TEST_OUT_FOLDER     = obj_test
@@ -98,6 +94,11 @@ test-build:
 	    $(GTEST_LIBS) \
 	    -lbtc \
 	    -o $(TEST_BINARY_PATH)
+
+# Valgrind for dynamic analysis
+valgrind: test-build
+	@echo "Running tests with Valgrind..."
+	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=0 --log-file=valgrind_report.txt ./$(TEST_BINARY_PATH)
 
 # ---------------------------------------------------------
 #  OTHER TARGETS

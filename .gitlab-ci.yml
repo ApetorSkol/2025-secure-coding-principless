@@ -9,7 +9,7 @@ variables:
 
 before_script:
   - apt-get update
-  - apt-get install -y cmake libtool autoconf pkg-config git libgtest-dev
+  - apt-get install -y cmake libtool autoconf pkg-config git libgtest-dev valgrind
   - git clone https://github.com/libbtc/libbtc.git /tmp/libbtc
   - cd /tmp/libbtc
   - ./autogen.sh
@@ -49,3 +49,18 @@ integration-test-job:
     - cd src/tests
     - chmod +x integration_tests.sh
     - ./integration_tests.sh
+
+memory-test-job:
+  stage: test
+  tags:
+    - shared-fi
+  script:
+    - cd /usr/src/gtest
+    - cmake .
+    - make
+    - cp lib/*.a /usr/lib
+    - cd $CI_PROJECT_DIR
+    - make test-build
+    - export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+    - make valgrind
+    - cat valgrind_report.txt | grep -q "All heap blocks were freed -- no leaks are possible"

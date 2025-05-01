@@ -42,3 +42,6 @@ obj_test
 
 #libbtc library
 libbtc/
+
+#valgrind output of testing
+valgrind_report.txt
