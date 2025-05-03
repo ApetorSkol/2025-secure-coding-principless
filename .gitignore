@@ -45,3 +45,7 @@ libbtc/
 
 #valgrind output of testing
 valgrind_report.txt
+
+# binaries for fuzzy testing
+fuzz_ArgParser
+fuzz_DeriveKey
