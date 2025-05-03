@@ -427,7 +427,6 @@ run_test "Basic multi with multiple private keys large k" "$BINARY script-expres
 
 run_test "multi largest input" "$BINARY script-expression 'multi(20, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1)#qwscasdr'" "multi(20, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1, $PUB_KEY1)#qwscasdr"
 
-
 run_test "multi private key1, no checksum" "$BINARY script-expression 'multi(1, $PRV_KEY1)'" "multi(1, $PRV_KEY1)"
 run_test "multi private key2, no checksum" "$BINARY script-expression 'multi(1, $PRV_KEY2)'" "multi(1, $PRV_KEY2)"
 run_test "multi private key3, no checksum" "$BINARY script-expression 'multi(1, $PRV_KEY3)'" "multi(1, $PRV_KEY3)"

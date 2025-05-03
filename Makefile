@@ -100,6 +100,13 @@ valgrind: test-build
 	@echo "Running tests with Valgrind..."
 	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=0 --log-file=valgrind_report.txt ./$(TEST_BINARY_PATH)
 
+# Fuzzing
+fuzz: fuzz_ArgParser fuzz_DeriveKey
+
+fuzz_%: $(APP_OBJECTS)
+	mkdir -p $(@D)
+	clang++ -g -O1 -fsanitize=fuzzer,address $(APP_OBJECTS) src/fuzz/$@.cpp -o $@ $(INCLUDE_DIRS) $(LIB_DIRS) $(LIBS)
+
 # ---------------------------------------------------------
 #  OTHER TARGETS
 # ---------------------------------------------------------
@@ -109,6 +116,8 @@ clean:
 	$(RM) $(BINARY_PATH)
 	$(RM) bip380
 	$(RM) packed.zip
+	$(RM) fuzz_ArgParser
+	$(RM) fuzz_DeriveKey
 
 rel: clean build
 
