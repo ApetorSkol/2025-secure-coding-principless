@@ -27,7 +27,6 @@ extern "C"
 #include <btc/utils.h>
 }
 
-using namespace std;
 
 static btc_chainparams *chain = (btc_chainparams *)&btc_chainparams_main;
 
@@ -36,9 +35,9 @@ static btc_chainparams *chain = (btc_chainparams *)&btc_chainparams_main;
  * @param input The input string.
  * @return A new string with all whitespace removed.
  */
-static string removeWhitespace(const string &input)
+static std::string removeWhitespace(const std::string &input)
 {
-    string result;
+    std::string result;
     for (char c : input)
     {
         if (!isspace(static_cast<unsigned char>(c)))
@@ -54,7 +53,7 @@ static string removeWhitespace(const string &input)
  * @param s The input string.
  * @return True if the string is hex, false otherwise.
  */
-static bool isHex(const string &s)
+static bool isHex(const std::string &s)
 {
     return all_of(s.begin(), s.end(), [](char c)
                   { return isxdigit(static_cast<unsigned char>(c)); });
@@ -65,7 +64,7 @@ static bool isHex(const string &s)
  * @param s The input string.
  * @return True if it is xpub or xprv, false otherwise.
  */
-static bool isXKey(const string &s)
+static bool isXKey(const std::string &s)
 {
     return s.rfind("xpub", 0) == 0 || s.rfind("xprv", 0) == 0;
 }
@@ -75,7 +74,7 @@ static bool isXKey(const string &s)
  * @param s The input string.
  * @return True if it is xprv, false otherwise.
  */
-static bool isXPrv(const string &s)
+static bool isXPrv(const std::string &s)
 {
     return s.rfind("xprv", 0) == 0;
 }
@@ -86,21 +85,21 @@ static bool isXPrv(const string &s)
  * @param path Derivation path string (e.g., "0/1h/2'").
  * @param priv Whether to derive with private (true) or public (false) key.
  */
-static void derivePath(btc_hdnode *node, const string &path, bool priv)
+static void derivePath(btc_hdnode *node, const std::string &path, bool priv)
 {
     if (!path.empty() && path.back() == '/')
     {
-        throw invalid_argument("[ERROR]: derivePath: trailing slash not allowed");
+        throw std::invalid_argument("[ERROR]: derivePath: trailing slash not allowed");
     }
 
-    istringstream ss(path);
-    string segment;
+    std::istringstream ss(path);
+    std::string segment;
 
     while (getline(ss, segment, '/'))
     {
         if (segment.empty())
         {
-            throw invalid_argument("[ERROR]: derivePath: invalid derivation index (empty segment)");
+            throw std::invalid_argument("[ERROR]: derivePath: invalid derivation index (empty segment)");
         }
 
         bool hardened = false;
@@ -112,7 +111,7 @@ static void derivePath(btc_hdnode *node, const string &path, bool priv)
 
         if (!all_of(segment.begin(), segment.end(), ::isdigit))
         {
-            throw invalid_argument("[ERROR]: derivePath: invalid derivation index (non-digit)");
+            throw std::invalid_argument("[ERROR]: derivePath: invalid derivation index (non-digit)");
         }
 
         unsigned long index;
@@ -122,17 +121,17 @@ static void derivePath(btc_hdnode *node, const string &path, bool priv)
         }
         catch (...)
         {
-            throw invalid_argument("[ERROR]: derivePath: stoul failed (non-numeric segment)");
+            throw std::invalid_argument("[ERROR]: derivePath: stoul failed (non-numeric segment)");
         }
 
-        if (index > numeric_limits<uint32_t>::max())
+        if (index > std::numeric_limits<uint32_t>::max())
         {
-            throw out_of_range("[ERROR]: derivePath: index exceeds 32-bit range");
+            throw std::out_of_range("[ERROR]: derivePath: index exceeds 32-bit range");
         }
 
         if (index >= 0x80000000)
         {
-            throw invalid_argument("[ERROR]: derivePath: derivation index out of range");
+            throw std::invalid_argument("[ERROR]: derivePath: derivation index out of range");
         }
 
         if (hardened)
@@ -146,8 +145,8 @@ static void derivePath(btc_hdnode *node, const string &path, bool priv)
         if (!result)
         {
             if (!priv && index >= 0x80000000)
-                throw invalid_argument("[ERROR]: derivePath: cannot derive hardened key from xpub");
-            throw runtime_error("[ERROR]: derivePath: CKD operation failed");
+                throw std::invalid_argument("[ERROR]: derivePath: cannot derive hardened key from xpub");
+            throw std::runtime_error("[ERROR]: derivePath: CKD operation failed");
         }
     }
 }
@@ -157,33 +156,33 @@ static void derivePath(btc_hdnode *node, const string &path, bool priv)
  * @param seedStr The hex seed string.
  * @param path The derivation path.
  */
-static void handleSeed(const string &seedStr, const string &path)
+static void handleSeed(const std::string &seedStr, const std::string &path)
 {
-    string clean = removeWhitespace(seedStr);
+    std::string clean = removeWhitespace(seedStr);
 
     if (!isHex(clean))
     {
-        throw invalid_argument("[ERROR]: handleSeed: invalid characters in seed");
+        throw std::invalid_argument("[ERROR]: handleSeed: invalid characters in seed");
     }
     if (clean.length() % 2 != 0 || clean.length() < 32 || clean.length() > 128)
     {
-        throw invalid_argument("[ERROR]: handleSeed: seed length out of range");
+        throw std::invalid_argument("[ERROR]: handleSeed: seed length out of range");
     }
 
     size_t byteLen = clean.length() / 2;
-    vector<uint8_t> seed(byteLen);
+    std::vector<uint8_t> seed(byteLen);
     int outLen = 0;
 
     utils_hex_to_bin(clean.c_str(), seed.data(), clean.length(), &outLen);
     if (outLen != (int)byteLen)
     {
-        throw invalid_argument("[ERROR]: handleSeed: hex decode mismatch");
+        throw std::invalid_argument("[ERROR]: handleSeed: hex decode mismatch");
     }
 
     btc_hdnode node;
     if (!btc_hdnode_from_seed(seed.data(), seed.size(), &node))
     {
-        throw runtime_error("[ERROR]: handleSeed: failed to create node from seed");
+        throw std::runtime_error("[ERROR]: handleSeed: failed to create node from seed");
     }
 
     if (!path.empty())
@@ -195,7 +194,7 @@ static void handleSeed(const string &seedStr, const string &path)
     btc_hdnode_serialize_public(&node, chain, xpub, sizeof(xpub));
     btc_hdnode_serialize_private(&node, chain, xprv, sizeof(xprv));
 
-    cout << xpub << ":" << xprv << endl;
+    std::cout << xpub << ":" << xprv << std::endl;
 }
 
 /**
@@ -203,12 +202,12 @@ static void handleSeed(const string &seedStr, const string &path)
  * @param key The extended key.
  * @param path The derivation path.
  */
-static void handleXKey(const string &key, const string &path)
+static void handleXKey(const std::string &key, const std::string &path)
 {
     btc_hdnode node;
     if (!btc_hdnode_deserialize(key.c_str(), chain, &node))
     {
-        throw invalid_argument("[ERROR]: handleXKey: invalid extended key");
+        throw std::invalid_argument("[ERROR]: handleXKey: invalid extended key");
     }
 
     bool hasPrv = isXPrv(key);
@@ -219,14 +218,14 @@ static void handleXKey(const string &key, const string &path)
 
     char xpub[112];
     btc_hdnode_serialize_public(&node, chain, xpub, sizeof(xpub));
-    cout << xpub;
+    std::cout << xpub;
     if (hasPrv)
     {
         char xprv[112];
         btc_hdnode_serialize_private(&node, chain, xprv, sizeof(xprv));
-        cout << ":" << xprv;
+        std::cout << ":" << xprv;
     }
-    cout << endl;
+    std::cout << std::endl;
 }
 
 /**
@@ -234,7 +233,7 @@ static void handleXKey(const string &key, const string &path)
  * @param values List of input strings (seeds or extended keys).
  * @param filepath Derivation path string.
  */
-void deriveKey(const vector<string> &values, const string &filepath)
+void deriveKey(const std::vector<std::string> &values, const std::string &filepath)
 {
     for (const auto &val : values)
     {
@@ -252,9 +251,9 @@ void deriveKey(const vector<string> &values, const string &filepath)
                 handleSeed(val, filepath);
             }
         }
-        catch (const exception &e)
+        catch (const std::exception &e)
         {
-            cerr << e.what() << endl;
+            std::cerr << e.what() << std::endl;
             exit(1);
         }
     }

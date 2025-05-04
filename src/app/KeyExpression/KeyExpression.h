@@ -13,7 +13,5 @@
 #include <vector>
 #include <string>
 
-using namespace std;
-
-void runKeyExpression(const vector<string> &argValues);
+void runKeyExpression(const std::vector<std::string> &argValues);
 

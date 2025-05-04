@@ -28,23 +28,20 @@ extern "C"
 }
 
 
-using namespace std;
-
-
 /**
  * Prints help
  */
 void ArgParser::printHelp() {
-    cout << "derive-key {value} [--path {path}] [-]    - Depending on the type of the input {value} the utility outputs certain extended keys." << endl;
-    cout << endl;
-    cout << endl;
-    cout << "key-expression {expr} [-]     - parses the {expr} according to the BIP 380 Key Expressions specification. If there are no parsing errors, the key expression is echoed back on a single line with 0 exit code. Otherwise, the utility errors out with a non-zero exit code and descriptive message." << endl;
-    cout << endl;
-    cout << endl;
-    cout << "script-expression {expr} [-]  - sub-command implements parsing of some of the script expressions and optionally also checksum verification and calculation." << endl;
-    cout << endl;
-    cout << endl;
-    cout << "--help   	- prints help and exits out" << endl;
+    std::cout << "derive-key {value} [--path {path}] [-]    - Depending on the type of the input {value} the utility outputs certain extended keys." << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << "key-expression {expr} [-]     - parses the {expr} according to the BIP 380 Key Expressions specification. If there are no parsing errors, the key expression is echoed back on a single line with 0 exit code. Otherwise, the utility errors out with a non-zero exit code and descriptive message." << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << "script-expression {expr} [-]  - sub-command implements parsing of some of the script expressions and optionally also checksum verification and calculation." << std::endl;
+    std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << "--help   	- prints help and exits out" << std::endl;
 
     exit(0);
 }
@@ -55,7 +52,7 @@ void ArgParser::printHelp() {
   * @param arg argument to check
   * @return true if found, false if otherwise
   */
-bool ArgParser::argExists(const string &arg) {
+bool ArgParser::argExists(const std::string &arg) {
     return find(this->argList.begin(), this->argList.end(), arg) != this->argList.end();
 }
 
@@ -65,7 +62,7 @@ bool ArgParser::argExists(const string &arg) {
  * @param arg argument to check
  * @return true if multiples exist, false if otherwise
  */
-bool ArgParser::multipleArgsExist(const string &arg) {
+bool ArgParser::multipleArgsExist(const std::string &arg) {
     auto iter = find(this->argList.begin(), this->argList.end(), arg);
     if (iter == this->argList.end())
         return false;
@@ -101,7 +98,7 @@ bool ArgParser::invalidKeyArgsPosition() {
  * @param value value to be hashed
  * @return hashed string
  */
-string ArgParser::sha256(const string &value) {
+std::string ArgParser::sha256(const std::string &value) {
     using safeheron::hash::CSHA256;
 
     CSHA256 sha256;
@@ -109,9 +106,9 @@ string ArgParser::sha256(const string &value) {
     sha256.Write(reinterpret_cast<const unsigned char*>(value.c_str()), value.length());
     sha256.Finalize(outputBuffer);
 
-    ostringstream hexStream;
+    std::ostringstream hexStream;
     for (unsigned char ch : outputBuffer) {
-        hexStream << hex << setw(2) << setfill('0') << static_cast<int>(ch);
+        hexStream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(ch);
     }
 
     return hexStream.str();
@@ -128,13 +125,13 @@ string ArgParser::sha256(const string &value) {
  *
  * @param value value to be checked
  */
-void ArgParser::parseDeriveKeyValue(const string &value) {
-    const regex valueRegex("^(([0-9a-fA-F]{2})([ \t]*)){16,64}$");
+void ArgParser::parseDeriveKeyValue(const std::string &value) {
+    const std::regex valueRegex("^(([0-9a-fA-F]{2})([ \t]*)){16,64}$");
 
-    smatch matches;
+    std::smatch matches;
     if (!regex_match(value, matches, valueRegex) &&
-        !regex_match(value, matches, regex(PURE_PRIVATE_KEYS_REGEX)))
-        throw invalid_argument("[ERROR]: parseDeriveKeyValue: invalid key value");
+        !regex_match(value, matches, std::regex(PURE_PRIVATE_KEYS_REGEX)))
+        throw std::invalid_argument("[ERROR]: parseDeriveKeyValue: invalid key value");
 
 }
 
@@ -149,24 +146,24 @@ void ArgParser::parseDeriveKeyValue(const string &value) {
   *
   * @param filepath filepath to be checked
   */
-void ArgParser::parseFilepath(const string &filepath) {
-    const regex filepathRegex("^(\\/?\\d+(H|h|')?)+$");
-    const regex numberRegex("\\d+");
+void ArgParser::parseFilepath(const std::string &filepath) {
+    const std::regex filepathRegex("^(\\/?\\d+(H|h|')?)+$");
+    const std::regex numberRegex("\\d+");
 
-    smatch matches;
+    std::smatch matches;
     if (!regex_match(filepath, matches, filepathRegex))
-        throw invalid_argument("[ERROR]: parseFilepath: filepathRegex did not match");
+        throw std::invalid_argument("[ERROR]: parseFilepath: filepathRegex did not match");
 
-    const sregex_token_iterator end;
-    for (sregex_token_iterator iter(filepath.begin(), filepath.end(), numberRegex, 0); iter != end; iter++) {
+    const std::sregex_token_iterator end;
+    for (std::sregex_token_iterator iter(filepath.begin(), filepath.end(), numberRegex, 0); iter != end; iter++) {
         try {
             unsigned long numBuffer = stoul(iter->str());
 
-            if ((numeric_limits<uint32_t>::max() / 2) < numBuffer)
-                throw out_of_range("[ERROR]: parseFilepath: Number above range");
+            if ((std::numeric_limits<uint32_t>::max() / 2) < numBuffer)
+                throw std::out_of_range("[ERROR]: parseFilepath: Number above range");
         }
-        catch (const out_of_range &e) {
-            throw  invalid_argument("[ERROR]: parseFilepath: stoul failed");
+        catch (const std::out_of_range &e) {
+            throw  std::invalid_argument("[ERROR]: parseFilepath: stoul failed");
         }
     }
 }
@@ -177,19 +174,19 @@ void ArgParser::parseFilepath(const string &filepath) {
  * @param WIFKey WIF key to be converted
  * @return decoded PK
  */
-string ArgParser::WIFToPrivateKey(const string &WIFKey) {
+std::string ArgParser::WIFToPrivateKey(const std::string &WIFKey) {
     using namespace safeheron::encode::hex;
     using namespace safeheron::encode::base58;
-    string convertedString;
+    std::string convertedString;
     try {
         convertedString = EncodeToHex(DecodeFromBase58(WIFKey));
     }
-    catch (exception &ex) {
-        throw invalid_argument("[ERROR]: WIFToPrivateKey: DecodeFromBase58 failed");
+    catch (std::exception &ex) {
+        throw std::invalid_argument("[ERROR]: WIFToPrivateKey: DecodeFromBase58 failed");
     }
 
     if (convertedString.length() != 74)
-        throw invalid_argument("[ERROR]: WIFToPrivateKey: Invalid convertedString output length");
+        throw std::invalid_argument("[ERROR]: WIFToPrivateKey: Invalid convertedString output length");
 
     return convertedString;
 }
@@ -200,23 +197,23 @@ string ArgParser::WIFToPrivateKey(const string &WIFKey) {
  * @param WIFKey WIF key to be checked
  * @return true if OK, false if otherwise
  */
-void ArgParser::checkWIFChecksum(const string &WIFKey) {
+void ArgParser::checkWIFChecksum(const std::string &WIFKey) {
     using namespace safeheron::encode::hex;
     using namespace safeheron::encode::base58;
-    string convertedString;
+    std::string convertedString;
     try {
         convertedString = WIFToPrivateKey(WIFKey);
     }
-    catch (exception &ex) {
-        throw_with_nested(invalid_argument("[ERROR]: checkWIFChecksum: WIFToPrivateKey failed"));
+    catch (std::exception &ex) {
+        throw_with_nested(std::invalid_argument("[ERROR]: checkWIFChecksum: WIFToPrivateKey failed"));
     }
 
-    string shortString = convertedString.substr(0, 66);
-    string checksum = convertedString.substr(66, convertedString.length());
-    string result = sha256(DecodeFromHex(sha256(DecodeFromHex(shortString))));
+    std::string shortString = convertedString.substr(0, 66);
+    std::string checksum = convertedString.substr(66, convertedString.length());
+    std::string result = sha256(DecodeFromHex(sha256(DecodeFromHex(shortString))));
 
     if (checksum != result.substr(0, 8))
-        throw invalid_argument("[ERROR]: checkWIFChecksum: checksum does not match WIF key");
+        throw std::invalid_argument("[ERROR]: checkWIFChecksum: checksum does not match WIF key");
 }
 
 
@@ -224,25 +221,25 @@ void ArgParser::checkWIFChecksum(const string &WIFKey) {
  * Parses the values provided in key-expression
  * @param value value to be checked
  */
-void ArgParser::parseKeyExpressionValue(const string &value) {
-    const regex simpleKeyExpressionValueRegex("^" + SIMPLE_KEY_EXPRESSION_VALUE_REGEX + "$");
-    const regex WIFRegex("^" + WIF_REGEX + "$");
-    const regex extendedPrivateKeys("^" + EXTENDED_PRIVATE_KEYS_REGEX + "$");
+void ArgParser::parseKeyExpressionValue(const std::string &value) {
+    const std::regex simpleKeyExpressionValueRegex("^" + SIMPLE_KEY_EXPRESSION_VALUE_REGEX + "$");
+    const std::regex WIFRegex("^" + WIF_REGEX + "$");
+    const std::regex extendedPrivateKeys("^" + EXTENDED_PRIVATE_KEYS_REGEX + "$");
 
-    smatch matches;
+    std::smatch matches;
     if (regex_match(value, matches, simpleKeyExpressionValueRegex)) {
         return;
     }
     else if (regex_match(value, matches, WIFRegex)) {
         try {
-          	string noSquareBrackets = value;
-            if (value.find(']') != string::npos ) {
+          	std::string noSquareBrackets = value;
+            if (value.find(']') != std::string::npos ) {
                 noSquareBrackets = StringUtilities::split(value, "]")[1];
             }
             checkWIFChecksum(noSquareBrackets);
         }
-        catch (exception &ex) {
-            throw_with_nested(invalid_argument("[ERROR]: parseKeyExpressionValue: checkWIFChecksum failed"));
+        catch (std::exception &ex) {
+            throw_with_nested(std::invalid_argument("[ERROR]: parseKeyExpressionValue: checkWIFChecksum failed"));
         }
     }
     else if (regex_match(value, matches, extendedPrivateKeys)) {
@@ -251,13 +248,13 @@ void ArgParser::parseKeyExpressionValue(const string &value) {
 
         if (!btc_hdnode_deserialize(value.c_str(), chain, &node))
         {
-            throw invalid_argument("[ERROR]: parseKeyExpressionValue: invalid extended key");
+            throw std::invalid_argument("[ERROR]: parseKeyExpressionValue: invalid extended key");
         }
 
         return;
     }
     else {
-        throw invalid_argument("[ERROR]: parseKeyExpressionValue: unrecognizable key expression");
+        throw std::invalid_argument("[ERROR]: parseKeyExpressionValue: unrecognizable key expression");
     }
 }
 
@@ -267,9 +264,9 @@ void ArgParser::parseKeyExpressionValue(const string &value) {
  * @param string str to be checked
  * @return true if matches, else returns false
  */
-bool ArgParser::checkPkhExpression(string str, string checksumRegex){
-    const regex PkhRegex("^ *" + PKH_REGEX + checksumRegex + "$");
-    smatch matches;
+bool ArgParser::checkPkhExpression(std::string str, std::string checksumRegex){
+    const std::regex PkhRegex("^ *" + PKH_REGEX + checksumRegex + "$");
+    std::smatch matches;
     if (regex_match(str, matches, PkhRegex)){
         parseKeyExpressionValue(matches[1].str());
         return true;
@@ -283,9 +280,9 @@ bool ArgParser::checkPkhExpression(string str, string checksumRegex){
  * @param string str to be checked
  * @return true if matches, else returns false
  */
-bool ArgParser::checkPkExpression(string str, string checksumRegex){
-    const regex PkRegex("^ *" + PK_REGEX + checksumRegex + "$");
-    smatch matches;
+bool ArgParser::checkPkExpression(std::string str, std::string checksumRegex){
+    const std::regex PkRegex("^ *" + PK_REGEX + checksumRegex + "$");
+    std::smatch matches;
     if (regex_match(str, matches, PkRegex)){
         parseKeyExpressionValue(matches[1].str());
         return true;
@@ -299,8 +296,8 @@ bool ArgParser::checkPkExpression(string str, string checksumRegex){
  * @param string str to be checked
  * @return true if matches, else returns false
  */
-bool ArgParser::checkMultiExpression(string str, string checksumRegex){
-    const regex MultiRegex("^ *" + MULTI_REGEX + checksumRegex + "$");
+bool ArgParser::checkMultiExpression(std::string str, std::string checksumRegex){
+    const std::regex MultiRegex("^ *" + MULTI_REGEX + checksumRegex + "$");
     if (!regex_match(str, MultiRegex)) {
         return false;
     }
@@ -308,14 +305,14 @@ bool ArgParser::checkMultiExpression(string str, string checksumRegex){
     str = StringUtilities::removeWhiteCharacters(str);
     str = StringUtilities::stripFirstSubstring(str, "multi(");
     str = StringUtilities::stripLastSubstring(str, ")");
-    vector<string> tokens = StringUtilities::split(str, ",");
+    std::vector<std::string> tokens = StringUtilities::split(str, ",");
     size_t size = tokens.size() - 1;
     size_t k;
         try{
             k = stoi(tokens[0]);
         }
-        catch (exception &ex) {
-            throw invalid_argument("[ERROR]: checkMultiExpression: Stoi() invalid conversion of " + tokens[0]);
+        catch (std::exception &ex) {
+            throw std::invalid_argument("[ERROR]: checkMultiExpression: Stoi() invalid conversion of " + tokens[0]);
         }
 
     if (size < k ){
@@ -324,7 +321,7 @@ bool ArgParser::checkMultiExpression(string str, string checksumRegex){
 
     // check valid keys
     for (size_t i = 1; i < tokens.size() ; i++) {
-        string noHashTag = StringUtilities::split(tokens[i], "#")[0];
+        std::string noHashTag = StringUtilities::split(tokens[i], "#")[0];
         parseKeyExpressionValue(noHashTag);
     }
 
@@ -337,12 +334,12 @@ bool ArgParser::checkMultiExpression(string str, string checksumRegex){
  * @param string str to be checked
  * @return true if matches, else returns false
  */
-bool ArgParser::checkShExpression(string str, string checksumRegex){
-    const regex ShMultiRegex("^ *" + SH_MULTI_REGEX + checksumRegex + "$");
-    const regex ShPkRegex("^ *" + SH_PK_REGEX + checksumRegex + "$");
-    const regex ShPkhRegex("^ *" + SH_PKH_REGEX + checksumRegex + "$");
+bool ArgParser::checkShExpression(std::string str, std::string checksumRegex){
+    const std::regex ShMultiRegex("^ *" + SH_MULTI_REGEX + checksumRegex + "$");
+    const std::regex ShPkRegex("^ *" + SH_PK_REGEX + checksumRegex + "$");
+    const std::regex ShPkhRegex("^ *" + SH_PKH_REGEX + checksumRegex + "$");
 
-    smatch matches;
+    std::smatch matches;
     if (regex_match(str, matches, ShPkRegex) ||
         regex_match(str, matches, ShPkhRegex)
         ) {
@@ -354,14 +351,14 @@ bool ArgParser::checkShExpression(string str, string checksumRegex){
         str = StringUtilities::removeWhiteCharacters(str);
         str = StringUtilities::stripFirstSubstring(str, "sh(multi(");
         str = StringUtilities::stripLastSubstring(str, "))");
-        vector<string> tokens = StringUtilities::split(str, ",");
+        std::vector<std::string> tokens = StringUtilities::split(str, ",");
         size_t size = tokens.size() - 1;
         size_t k;
         try{
             k = stoi(tokens[0]);
         }
-        catch (exception &ex) {
-            throw invalid_argument("[ERROR]: checkMultiExpression: Stoi() invalid conversion of " + tokens[0]);
+        catch (std::exception &ex) {
+            throw std::invalid_argument("[ERROR]: checkMultiExpression: Stoi() invalid conversion of " + tokens[0]);
         }
 
         if (size < k ){
@@ -371,7 +368,7 @@ bool ArgParser::checkShExpression(string str, string checksumRegex){
 
         // check valid keys
         for (size_t i = 1; i < tokens.size() ; i++) {
-            string noHashTag = StringUtilities::split(tokens[i], "#")[0];
+            std::string noHashTag = StringUtilities::split(tokens[i], "#")[0];
             parseKeyExpressionValue(noHashTag);
         }
 
@@ -387,8 +384,8 @@ bool ArgParser::checkShExpression(string str, string checksumRegex){
  * @param string str to be checked
  * @return true if matches, else returns false
  */
-bool ArgParser::checkRawExpression(string str, string checksumRegex){
-    const regex RawRegex("^ *" + RAW_REGEX + checksumRegex + "$");
+bool ArgParser::checkRawExpression(std::string str, std::string checksumRegex){
+    const std::regex RawRegex("^ *" + RAW_REGEX + checksumRegex + "$");
     return regex_match(str, RawRegex);
 }
 
@@ -397,14 +394,14 @@ bool ArgParser::checkRawExpression(string str, string checksumRegex){
  * Parses the values provided in script-expression
  * @param value value to be checked
  */
-void ArgParser::parseScriptExpressionValue(string value) {
+void ArgParser::parseScriptExpressionValue(std::string value) {
       // check for correct handling of script expression based on provided flags
-    string checksumRegex = CHECKSUM_REGEX + "?"; // if no flags are provided then the checksumis just optional part but must have correct length
+    std::string checksumRegex = CHECKSUM_REGEX + "?"; // if no flags are provided then the checksumis just optional part but must have correct length
     if (this->getComputeChecksumFlag()){
         // if computeChecksum is provided ,then checksum is completely optional
         size_t position = value.find("#");
         // If it contain '#', then the rest after it can be anything
-        if (position != string::npos) {
+        if (position != std::string::npos) {
             checksumRegex = "(#.*?)";
         }
         // if it does not contain '#', then the CHECKSUM is not present and expression must match the whole string
@@ -422,7 +419,7 @@ void ArgParser::parseScriptExpressionValue(string value) {
         !checkShExpression(value, checksumRegex) &&// sh(pk(KEY)) or sh(pkh(KEY)) or sh(multi(k, KEY_1, KEY_2, ..., KEY_n))
         !checkRawExpression(value, checksumRegex) //raw(HEX)
         ) {
-            throw invalid_argument("[ERROR]: parseScriptExpressionValue: value(s) match no known regex");
+            throw std::invalid_argument("[ERROR]: parseScriptExpressionValue: value(s) match no known regex");
         }
 }
 
@@ -432,11 +429,11 @@ void ArgParser::parseScriptExpressionValue(string value) {
  * @param tmpArgValueVector empty vector, which function fills with detected expressions
  * @param filepath empty filepath, which function fills with detected filepath (if present)
  */
-void ArgParser::getDeriveKeyArgs(vector<string> *tmpArgValueVector, string *filepath) {
+void ArgParser::getDeriveKeyArgs(std::vector<std::string> *tmpArgValueVector, std::string *filepath) {
     if (tmpArgValueVector == nullptr || filepath == nullptr)
-        throw runtime_error("[ERROR]: getDeriveKeyArgs: nullptr provided");
+        throw std::runtime_error("[ERROR]: getDeriveKeyArgs: nullptr provided");
 
-    string tmpArgValue;  // for CLI value
+    std::string tmpArgValue;  // for CLI value
 
     for (auto iter = argList.begin(); iter != argList.end(); iter = next(iter)) {
         if (*iter == "derive-key") {
@@ -450,13 +447,13 @@ void ArgParser::getDeriveKeyArgs(vector<string> *tmpArgValueVector, string *file
             tmpArgValue = *iter;
         }
         else if ((*tmpArgValueVector).empty() && *iter == "-") {
-            string line;
-            while (getline(cin, line))
+            std::string line;
+            while (getline(std::cin, line))
                 if (!line.empty())
                     (*tmpArgValueVector).push_back(line);
         }
         else {
-            throw invalid_argument("[ERROR]: getDeriveKeyArgs: unsupported argument");
+            throw std::invalid_argument("[ERROR]: getDeriveKeyArgs: unsupported argument");
         }
     }
     // Primarily works with vector form
@@ -469,11 +466,11 @@ void ArgParser::getDeriveKeyArgs(vector<string> *tmpArgValueVector, string *file
  * Returns "key-expression" args from CLI.
  * @param tmpArgValueVector empty vector, which function fills with detected expressions
  */
-void ArgParser::getKeyExpressionArgs(vector<string> *tmpArgValueVector) {
+void ArgParser::getKeyExpressionArgs(std::vector<std::string> *tmpArgValueVector) {
     if (tmpArgValueVector == nullptr)
-        throw runtime_error("[ERROR]: getKeyExpressionArgs: nullptr provided");
+        throw std::runtime_error("[ERROR]: getKeyExpressionArgs: nullptr provided");
 
-    string tmpArgValue;  // for CLI value
+    std::string tmpArgValue;  // for CLI value
 
     for (const auto& arg : argList) {
         if (arg == "key-expression") {
@@ -483,12 +480,12 @@ void ArgParser::getKeyExpressionArgs(vector<string> *tmpArgValueVector) {
             tmpArgValue = arg;
         }
         else if ((*tmpArgValueVector).empty() && arg == "-") {
-            string line;
-            while (getline(cin, line))
+            std::string line;
+            while (getline(std::cin, line))
                 (*tmpArgValueVector).push_back(line);
         }
         else {
-            throw invalid_argument("[ERROR]: getKeyExpressionArgs: unsupported argument");
+            throw std::invalid_argument("[ERROR]: getKeyExpressionArgs: unsupported argument");
         }
     }
     // Primarily works with vector form
@@ -503,11 +500,11 @@ void ArgParser::getKeyExpressionArgs(vector<string> *tmpArgValueVector) {
  * @param verifyChecksumFlag false by default, set to true if such argument is found
  * @param computeChecksumFlag false by default, set to true if such argument is found
  */
-void ArgParser::getScriptExpressionArgs(vector<string> *tmpArgValueVector, bool *verifyChecksumFlag, bool *computeChecksumFlag) {
+void ArgParser::getScriptExpressionArgs(std::vector<std::string> *tmpArgValueVector, bool *verifyChecksumFlag, bool *computeChecksumFlag) {
     if (tmpArgValueVector == nullptr || verifyChecksumFlag == nullptr || computeChecksumFlag == nullptr)
-        throw runtime_error("[ERROR]: getScriptExpressionArgs: nullptr provided");
+        throw std::runtime_error("[ERROR]: getScriptExpressionArgs: nullptr provided");
 
-    string tmpArgValue;  // for CLI value
+    std::string tmpArgValue;  // for CLI value
 
     for (const auto& arg : argList) {
         if (arg == "script-expression") {
@@ -523,17 +520,17 @@ void ArgParser::getScriptExpressionArgs(vector<string> *tmpArgValueVector, bool 
             tmpArgValue = arg;
         }
         else if ((*tmpArgValueVector).empty() && arg == "-") {
-            string line;
-            while (getline(cin, line))
+            std::string line;
+            while (getline(std::cin, line))
                 (*tmpArgValueVector).push_back(line);
         }
         else {
-            throw invalid_argument("[ERROR]: getScriptExpressionArgs: unsupported argument");
+            throw std::invalid_argument("[ERROR]: getScriptExpressionArgs: unsupported argument");
         }
     }
 
     if (*verifyChecksumFlag && *computeChecksumFlag)
-        throw invalid_argument("[ERROR]: getScriptExpressionArgs: use either verifyChecksumFlag or computeChecksumFlag");
+        throw std::invalid_argument("[ERROR]: getScriptExpressionArgs: use either verifyChecksumFlag or computeChecksumFlag");
 
     // Primarily works with vector form
     if ((*tmpArgValueVector).empty())
@@ -545,16 +542,16 @@ void ArgParser::getScriptExpressionArgs(vector<string> *tmpArgValueVector, bool 
  * Function parses derive-key command arguments
  */
 void ArgParser::parseDeriveKey() {
-    vector<string> tmpArgValueVector;
-    string filepath;
+    std::vector<std::string> tmpArgValueVector;
+    std::string filepath;
     getDeriveKeyArgs(&tmpArgValueVector, &filepath);
 
     if (!filepath.empty()) {
         try {
             parseFilepath(filepath);
         }
-        catch (exception &ex) {
-            throw_with_nested(invalid_argument("[ERROR]: parseDeriveKey: invalid filepath"));
+        catch (std::exception &ex) {
+            throw_with_nested(std::invalid_argument("[ERROR]: parseDeriveKey: invalid filepath"));
         }
     }
 
@@ -562,8 +559,8 @@ void ArgParser::parseDeriveKey() {
         for (const auto &value : tmpArgValueVector)
             parseDeriveKeyValue(value);
     }
-    catch (exception &ex) {
-        throw_with_nested(invalid_argument("[ERROR]: parseDeriveKey: invalid value(s)"));
+    catch (std::exception &ex) {
+        throw_with_nested(std::invalid_argument("[ERROR]: parseDeriveKey: invalid value(s)"));
     }
 
     this->argFilepath = filepath;
@@ -576,15 +573,15 @@ void ArgParser::parseDeriveKey() {
  * Function parses key-expression key command arguments
  */
 void ArgParser::parseKeyExpression() {
-    vector<string> tmpArgValueVector;
+    std::vector<std::string> tmpArgValueVector;
     getKeyExpressionArgs(&tmpArgValueVector);
 
     try {
         for (const auto &value : tmpArgValueVector)
             parseKeyExpressionValue(value);
     }
-    catch (exception &ex) {
-        throw_with_nested(invalid_argument("[ERROR]: parseKeyExpression: parseKeyExpressionValue failed"));
+    catch (std::exception &ex) {
+        throw_with_nested(std::invalid_argument("[ERROR]: parseKeyExpression: parseKeyExpressionValue failed"));
     }
 
     this->argValuesVector = tmpArgValueVector;
@@ -595,7 +592,7 @@ void ArgParser::parseKeyExpression() {
  * Function parses script-expression command arguments
  */
 void ArgParser::parseScriptExpression() {
-    vector<string> tmpArgValueVector;
+    std::vector<std::string> tmpArgValueVector;
     this->verifyChecksumFlag = false;
     this->computeChecksumFlag = false;
     getScriptExpressionArgs(&tmpArgValueVector, &verifyChecksumFlag, &computeChecksumFlag);
@@ -604,8 +601,8 @@ void ArgParser::parseScriptExpression() {
         for (const auto &value : tmpArgValueVector)
             parseScriptExpressionValue(value);
     }
-    catch (exception &ex) {
-        throw_with_nested(invalid_argument("[ERROR]: parseScriptExpression: parseScriptExpressionValue failed"));
+    catch (std::exception &ex) {
+        throw_with_nested(std::invalid_argument("[ERROR]: parseScriptExpression: parseScriptExpressionValue failed"));
     }
 
     this->argValuesVector = tmpArgValueVector;
@@ -621,13 +618,13 @@ void ArgParser::parse() {
         printHelp();
 
     if (argList.size() < 2)
-        throw invalid_argument("Invalid number of arguments (>2 needed)");
+        throw std::invalid_argument("Invalid number of arguments (>2 needed)");
 
     if (invalidKeyArgsAmount())
-        throw invalid_argument("Invalid number of key arguments");
+        throw std::invalid_argument("Invalid number of key arguments");
 
     if (invalidKeyArgsPosition())
-        throw invalid_argument("First argument must be key-argument");
+        throw std::invalid_argument("First argument must be key-argument");
 
     if (argExists("derive-key"))
         parseDeriveKey();
@@ -642,7 +639,7 @@ void ArgParser::parse() {
  * Public getter for parsed and validated argument values
  * @return vector of argument values to perform operations on
  */
-vector<string> ArgParser::getArgValues() {
+std::vector<std::string> ArgParser::getArgValues() {
     return this->argValuesVector;
 }
 
@@ -651,7 +648,7 @@ vector<string> ArgParser::getArgValues() {
  * Public getter for parsed and validated filepath (if present)
  * @return filepath if provided
  */
-string ArgParser::getFilepath() {
+std::string ArgParser::getFilepath() {
     return this->argFilepath;
 }
 
@@ -677,7 +674,7 @@ bool ArgParser::getComputeChecksumFlag() const {
 void ArgParser::loadArguments(int argc, char **argv) {
     for (int x = 1; x < argc; x++) {
         if (strlen(argv[x]) > 3000)
-            throw invalid_argument("[ERROR]: ArgParser: argument too large (bigger than 3000 characters)");
+            throw std::invalid_argument("[ERROR]: ArgParser: argument too large (bigger than 3000 characters)");
 
         this->argList.emplace_back(argv[x]);
     }

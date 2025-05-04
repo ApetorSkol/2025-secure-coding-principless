@@ -626,7 +626,7 @@ TEST(ArgParserTest, tabSpace) {
                         ArgParser parser;
                         parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                         parser.parse();
-                    }, invalid_argument);
+                    }, std::invalid_argument);
 }
 
 
@@ -642,7 +642,7 @@ TEST(ArgParserTest, tabSpace1) {
                         ArgParser parser;
                         parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                         parser.parse();
-                    }, invalid_argument);
+                    }, std::invalid_argument);
 }
 
 
@@ -658,7 +658,7 @@ TEST(ArgParserTest, tabSpace2) {
                         ArgParser parser;
                         parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                         parser.parse();
-                    }, invalid_argument);
+                    }, std::invalid_argument);
 }
 
 
@@ -674,7 +674,7 @@ TEST(ArgParserTest, newLinaAtStrangePlaces) {
                         ArgParser parser;
                         parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                         parser.parse();
-                    }, invalid_argument);
+                    }, std::invalid_argument);
 }
 
 
@@ -690,7 +690,7 @@ TEST(ArgParserTest, newLinaAtStrangePlaces1) {
                         ArgParser parser;
                         parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                         parser.parse();
-                    }, invalid_argument);
+                    }, std::invalid_argument);
 }
 
 
@@ -706,7 +706,7 @@ TEST(ArgParserTest, newLinaAtStrangePlaces3) {
                         ArgParser parser;
                         parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                         parser.parse();
-                    }, invalid_argument);
+                    }, std::invalid_argument);
 }
 
 
@@ -722,7 +722,7 @@ TEST(ArgParserTest, newLinaAtStrangePlaces4) {
                         ArgParser parser;
                         parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                         parser.parse();
-                    }, invalid_argument);
+                    }, std::invalid_argument);
 }
 
 
@@ -738,7 +738,7 @@ TEST(ArgParserTest, newLinaAtStrangePlaces5) {
                         ArgParser parser;
                         parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                         parser.parse();
-                    }, invalid_argument);
+                    }, std::invalid_argument);
 }
 
 
@@ -754,7 +754,7 @@ TEST(ArgParserTest, newLinaAtStrangePlaces6) {
                         ArgParser parser;
                         parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                         parser.parse();
-                    }, invalid_argument);
+                    }, std::invalid_argument);
 }
 
 
@@ -770,7 +770,7 @@ TEST(ArgParserTest, newLinaAtStrangePlaces7) {
                         ArgParser parser;
                         parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                         parser.parse();
-                    }, invalid_argument);
+                    }, std::invalid_argument);
 }
 
 
@@ -790,8 +790,8 @@ TEST(ArgParserTest, validKeyOrigin1) {
 }
 
 TEST(ArgParserTest, stoiOverflow) {
-    string repeated = "9";
-    string finalStr;
+    std::string repeated = "9";
+    std::string finalStr;
     for (int x = 0; x < 900; x++)
         finalStr += repeated;
 
@@ -808,7 +808,7 @@ TEST(ArgParserTest, stoiOverflow) {
                          ArgParser parser;
                          parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                          parser.parse();
-                     }, invalid_argument);
+                     }, std::invalid_argument);
     }
 }
 
@@ -840,7 +840,7 @@ TEST(ArgParserTest, unicode) {
                      ArgParser parser;
                      parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                      parser.parse();
-                 }, invalid_argument);
+                 }, std::invalid_argument);
 }
 
 TEST(ArgParserTest, foreignChars) {
@@ -856,7 +856,7 @@ TEST(ArgParserTest, foreignChars) {
                      ArgParser parser;
                      parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                      parser.parse();
-                 }, invalid_argument);
+                 }, std::invalid_argument);
 }
 
 
@@ -872,7 +872,7 @@ TEST(ArgParserTest, invalidWIF) {
                         ArgParser parser;
                         parser.loadArguments(static_cast<int>(argv.size()), argv.data());
                         parser.parse();
-                    }, invalid_argument);
+                    }, std::invalid_argument);
 }
 
 
@@ -884,6 +884,6 @@ TEST(ArgParserTest, dangerousArgc) {
     EXPECT_THROW({
                      ArgParser parser;
                      parser.loadArguments(argc, const_cast<char **>(argv));
-                 }, invalid_argument);
+                 }, std::invalid_argument);
 }
  */

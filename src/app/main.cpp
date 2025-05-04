@@ -16,14 +16,14 @@ extern "C"
  * @param ex exception with nested exceptions
  * @param level level to show
  */
-void print_exception(const exception &ex, int level = 0)
+void print_exception(const std::exception &ex, int level = 0)
 {
-    cerr << string(level, ' ') << "exception: " << ex.what() << endl;
+    std::cerr << std::string(level, ' ') << "exception: " << ex.what() << std::endl;
     try
     {
         rethrow_if_nested(ex);
     }
-    catch (const exception &nestedException)
+    catch (const std::exception &nestedException)
     {
         print_exception(nestedException, level + 1);
     }
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
         argParser.loadArguments(argc, argv);
         argParser.parse();
     }
-    catch (const exception &ex)
+    catch (const std::exception &ex)
     {
         print_exception(ex);
         return 1;

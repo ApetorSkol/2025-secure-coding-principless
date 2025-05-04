@@ -555,7 +555,7 @@ TEST(ScriptExpressionTest, duplicatedExpressionRaw) {
 
     	ScriptExpression scriptExpression(argParser.getArgValues(), argParser.getComputeChecksumFlag(), argParser.getVerifyChecksumFlag());
 	    scriptExpression.parse();
-    }, invalid_argument);
+    }, std::invalid_argument);
 }
 
 /**
@@ -571,5 +571,5 @@ TEST(ScriptExpressionTest, duplicatedExpression) {
 
     	ScriptExpression scriptExpression(argParser.getArgValues(), argParser.getComputeChecksumFlag(), argParser.getVerifyChecksumFlag());
 	    scriptExpression.parse();
-    }, invalid_argument);
+    }, std::invalid_argument);
 }

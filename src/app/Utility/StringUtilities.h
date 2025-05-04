@@ -14,14 +14,12 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 
 class StringUtilities {
 public:
-    static string findFirstSubstringWithoutHash(const string& input);
-    static string stripFirstSubstring(string originalString, string substringToRemove);
-    static string stripLastSubstring(string originalString, string substringToRemove);
-    static vector<string> split(string str, string delimiter);
-    static string removeWhiteCharacters(string str);
+    static std::string findFirstSubstringWithoutHash(const std::string& input);
+    static std::string stripFirstSubstring(std::string originalString, std::string substringToRemove);
+    static std::string stripLastSubstring(std::string originalString, std::string substringToRemove);
+    static std::vector<std::string> split(std::string str, std::string delimiter);
+    static std::string removeWhiteCharacters(std::string str);
 };
