@@ -33,7 +33,7 @@
  *      chk ^= GENERATOR[i] if ((top >> i) & 1) else 0
  *  return chk
  */
-uint64_t ScriptExpression::calculateDescsumPolymod(vector<long int> symbols){
+uint64_t ScriptExpression::calculateDescsumPolymod(std::vector<long int> symbols){
     uint64_t chk = 1;
     for (uint64_t value : symbols) {
         uint64_t top = chk >> 35;
@@ -76,14 +76,14 @@ uint64_t ScriptExpression::calculateDescsumPolymod(vector<long int> symbols){
  *    symbols.append(groups[0] * 3 + groups[1])
  *  return symbols
  */
-vector<long int> ScriptExpression::expandDecsum(string s) {
-    vector<long int> groups;
-    vector<long int> symbols;
+std::vector<long int> ScriptExpression::expandDecsum(std::string s) {
+    std::vector<long int> groups;
+    std::vector<long int> symbols;
 
     for (char c : s) {
         size_t pos = this->INPUT_CHARSET.find(c);
-        if (pos == string::npos) {
-            cerr << "Error found invlaid character while computing expandDecsum" << endl;
+        if (pos == std::string::npos) {
+            std::cerr << "Error found invlaid character while computing expandDecsum" << std::endl;
             exit(1);
         }
 
@@ -121,22 +121,22 @@ vector<long int> ScriptExpression::expandDecsum(string s) {
  *  symbols = descsum_expand(s[:-9]) + [CHECKSUM_CHARSET.find(x) for x in s[-8:]]
  *  return descsum_polymod(symbols) == 1
  */
-bool ScriptExpression::checkDecsum(string s) {
+bool ScriptExpression::checkDecsum(std::string s) {
 
     if (s.size() < 9 || s[s.size() - 9] != '#') {
-        cerr << "Error wrong checksum size or no hashtag provided" << endl;
+        std::cerr << "Error wrong checksum size or no hashtag provided" << std::endl;
         exit(1);
     }
 
-    string checksumPart = s.substr(s.size() - 8);
+    std::string checksumPart = s.substr(s.size() - 8);
     for (char c : checksumPart) {
-        if (this->CHECKSUM_CHARSET.find(c) == string::npos) {
-            cerr << "Error wrong char in checksum" << endl;
+        if (this->CHECKSUM_CHARSET.find(c) == std::string::npos) {
+            std::cerr << "Error wrong char in checksum" << std::endl;
             exit(1);
         }
     }
 
-    vector<long int> symbols = this->expandDecsum(s.substr(0, s.size() - 9));
+    std::vector<long int> symbols = this->expandDecsum(s.substr(0, s.size() - 9));
     if (symbols.empty()) {
         return false;
     }
@@ -160,12 +160,12 @@ bool ScriptExpression::checkDecsum(string s) {
  *  checksum = descsum_polymod(symbols) ^ 1
  *  return s + '#' + ''.join(CHECKSUM_CHARSET[(checksum >> (5 * (7 - i))) & 31] for i in range(8))
  */
-string ScriptExpression::createDecsum(string s, bool includeInput) {
-    vector<long int> symbols = this->expandDecsum(s);
+std::string ScriptExpression::createDecsum(std::string s, bool includeInput) {
+    std::vector<long int> symbols = this->expandDecsum(s);
     symbols.insert(symbols.end(), 8, 0);
     uint64_t checksum = this->calculateDescsumPolymod(symbols) ^ 1;
 
-    string checksumStr;
+    std::string checksumStr;
     for (int i = 0; i < 8; i++) {
         uint32_t index = (checksum >> (5 * (7 - i))) & 31;
         checksumStr += this->CHECKSUM_CHARSET[index];
@@ -182,8 +182,8 @@ string ScriptExpression::createDecsum(string s, bool includeInput) {
  * Function for computing checksum function.
  */
 void ScriptExpression::computeChecksum() {
-    string firstSubstringWithoutHash = StringUtilities::findFirstSubstringWithoutHash(this->Script);
-    cout << this->createDecsum(firstSubstringWithoutHash, true) << endl;
+    std::string firstSubstringWithoutHash = StringUtilities::findFirstSubstringWithoutHash(this->Script);
+    std::cout << this->createDecsum(firstSubstringWithoutHash, true) << std::endl;
 }
 
 
@@ -193,19 +193,19 @@ void ScriptExpression::computeChecksum() {
  * also calculated checksum is same as provided one. In other case it prints error message
  */
 void ScriptExpression::verifyChecksum() {
-    string scriptExpression = this->Script;
+    std::string scriptExpression = this->Script;
 
-    string checksumProvided = scriptExpression.substr(scriptExpression.length() - 8, scriptExpression.length());
-    string script = scriptExpression.substr(0, scriptExpression.length() - 9);
+    std::string checksumProvided = scriptExpression.substr(scriptExpression.length() - 8, scriptExpression.length());
+    std::string script = scriptExpression.substr(0, scriptExpression.length() - 9);
 
     bool checkDecsum = this->checkDecsum(scriptExpression);
-    string checksumCalculated = this->createDecsum(script, false);
+    std::string checksumCalculated = this->createDecsum(script, false);
 
     if (checkDecsum && (checksumCalculated == checksumProvided)) {
-        cout << "OK" << endl;
+        std::cout << "OK" << std::endl;
     }
     else {
-        cerr << "Error: Provided checksum is not correct for provided expression." << endl;
+        std::cerr << "Error: Provided checksum is not correct for provided expression." << std::endl;
         exit(1);
     }
 }
@@ -221,7 +221,7 @@ void ScriptExpression::parse() {
         this->verifyChecksum();
     }
     else {
-        cout << this->Script << endl;
+        std::cout << this->Script << std::endl;
     }
 }
 
@@ -233,7 +233,7 @@ void ScriptExpression::parse() {
  * @param computeChecksumFlag is flag which tells if compute checksum flag was mentioned
  * @param verifyChecksumFlag is flag which tells if verify checksum flag was mentione
  */
-ScriptExpression::ScriptExpression(vector<string> argValuesVector,bool computeChecksumFlag, bool verifyChecksumFlag) {
+ScriptExpression::ScriptExpression(std::vector<std::string> argValuesVector,bool computeChecksumFlag, bool verifyChecksumFlag) {
     this->ArgValuesVector = argValuesVector;
     this->ComputeChecksumFlag = computeChecksumFlag;
     this->VerifyChecksumFlag = verifyChecksumFlag;
@@ -247,7 +247,7 @@ ScriptExpression::ScriptExpression(vector<string> argValuesVector,bool computeCh
     if (argValuesVector.size() == 1 ){
         this->Script = argValuesVector[0];
     } else {
-        cerr << "Error: Got invalid number of expressions." << endl;
+        std::cerr << "Error: Got invalid number of expressions." << std::endl;
         exit(1);
     }
 }

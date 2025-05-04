@@ -19,12 +19,12 @@
  * @param const string input is a string which is supposed to be checked
  * @return first substring without hash
  */
-string StringUtilities::findFirstSubstringWithoutHash(const string& input) {
+std::string StringUtilities::findFirstSubstringWithoutHash(const std::string& input) {
     // Find the first occurrence of '#'
     size_t hashPos = input.find('#');
 
     // If there's no '#', the entire string is a substring without '#'
-    if (hashPos == string::npos) {
+    if (hashPos == std::string::npos) {
         return input;
     }
 
@@ -32,7 +32,7 @@ string StringUtilities::findFirstSubstringWithoutHash(const string& input) {
     if (hashPos > 0) {
         return input.substr(0, hashPos);
     } else {
-        cerr << "Error: Invalid format of expression." << endl;
+        std::cerr << "Error: Invalid format of expression." << std::endl;
         exit(1);
     }
 }
@@ -44,13 +44,13 @@ string StringUtilities::findFirstSubstringWithoutHash(const string& input) {
  * @param string delimiter is a delimiter which divides string
  * @return vector of string
  */
-vector<string> StringUtilities::split(string str, string delimiter) {
-    vector<string> tokens;
+std::vector<std::string> StringUtilities::split(std::string str, std::string delimiter) {
+    std::vector<std::string> tokens;
 
     size_t start = 0;
     size_t end = str.find(delimiter);
 
-    while (end != string::npos) {
+    while (end != std::string::npos) {
         tokens.push_back(str.substr(start, end - start));
         start = end + delimiter.length();
         end = str.find(delimiter, start);
@@ -68,7 +68,7 @@ vector<string> StringUtilities::split(string str, string delimiter) {
  * @param string str to be stripped of white characters
  * @return stripped string
  */
-string StringUtilities::removeWhiteCharacters(string str) {
+std::string StringUtilities::removeWhiteCharacters(std::string str) {
     // Remove all whitespace characters
     str.erase(remove_if(str.begin(), str.end(), [](unsigned char c) { return isspace(c); }), str.end());
     return str;
@@ -81,17 +81,17 @@ string StringUtilities::removeWhiteCharacters(string str) {
  * @param string substringToRemove string to be removed from originalString
  * @return stripped string
  */
-string StringUtilities::stripFirstSubstring(string originalString, string substringToRemove) {
+std::string StringUtilities::stripFirstSubstring(std::string originalString, std::string substringToRemove) {
     // Find the first occurrence of the substring
     size_t position = originalString.find(substringToRemove);
 
     // If substring is found, erase it
-    if (position != string::npos) {
+    if (position != std::string::npos) {
         originalString.erase(position, substringToRemove.length());
         return originalString;
     }
     else {
-        throw invalid_argument("[ERROR]: stripFirstSubstring: substringToRemove is not substring of originalString");
+        throw std::invalid_argument("[ERROR]: stripFirstSubstring: substringToRemove is not substring of originalString");
     }
 }
 
@@ -102,13 +102,13 @@ string StringUtilities::stripFirstSubstring(string originalString, string substr
  * @param string substringToRemove string to be removed from originalString
  * @return stripped string
  */
-string StringUtilities::stripLastSubstring(string originalString, string substringToRemove) {
+std::string StringUtilities::stripLastSubstring(std::string originalString, std::string substringToRemove) {
     // Find the last occurrence of substr
     size_t pos = originalString.rfind(substringToRemove);
 
     // If substr is found, remove it
-    if (pos != string::npos) {
-        string result = originalString;
+    if (pos != std::string::npos) {
+        std::string result = originalString;
         result.erase(pos, substringToRemove.length());
         return result;
     }

@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-void runKeyExpression(const vector<string> &argValues) {
+void runKeyExpression(const std::vector<std::string> &argValues) {
     for (auto &arg : argValues)
-        cout << arg << endl;
+        std::cout << arg << std::endl;
 }

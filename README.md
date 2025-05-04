@@ -142,7 +142,16 @@ The second part (mainly functions `parseDeriveKeyValue`, `parseKeyExpressionValu
 For safety reasons, the maximum length of single argument cannot exceed 1000 characters.
 
 
+## Testing
 
+Testing was performed using `gtests`, `valgrind`, `cppcheck`, `fuzzer` and using `bash` scripts.
+All tests, besides fuzzy testing, are running in CI/CD pipeline in GitLab.
+Negative results of test were repaired. In case you want to run tests locally, install dependencies and run:
+ - `make test` for `gtest` unit testing
+ - `make valgrind` for `valgrind` memory analysis
+ - `cppcheck --force --check-level=exhaustive --language=c++ --error-exitcode=1 src/app/* src/app/*/* src/app/*/*/*` for `cppcheck` static analysis of programme
+ - `make fuzzer` for fuzzy testing, followed by running fuzzy binaries `./fuzz_ArgParser` or `fuzz_DeriveKey` **_NOTE:_** As most of the checking is performed by `ArgPraser`, there is no fuzzy testing of `ScriptExpression` or `KeyExpression` as fail tests might report issues which are not actually presented. 
+ - `./integration_tests.sh` in `src/app/tests` folder, for `bash` script integration tests
 
 # Authors
 Authors of this project are
