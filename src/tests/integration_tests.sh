@@ -127,6 +127,28 @@ echo -e "\n${GREEN}✔ [DERIVE-KEY] Running tests for checking path and dash (-)
 run_test "Path before dash" "$BINARY derive-key --path 0/1 - <<< '000102030405060708090a0b0c0d0e0f'" "$EXPECTED_DERIVED"
 run_test "Path after dash" "$BINARY derive-key - --path 0/1 <<< '000102030405060708090a0b0c0d0e0f'" "$EXPECTED_DERIVED"
 
+#------------------------------- ARGUMENT-PARSER TESTS -------------------------------
+EXPECTED_HELP=$(eval "$BINARY --help" 2>&1)
+
+echo -e "\n${GREEN}✔ [ARGUMENT-PARSER] Running tests for ARG-PARSER"
+run_test "Single help" "$BINARY --help" "$EXPECTED_HELP"
+run_test "Multiple help" "$BINARY --help --help" "$EXPECTED_HELP"
+run_test "Multiple help with additional args" "$BINARY --help a s d f g h j k l p i y t r r e w q --help" "$EXPECTED_HELP"
+run_test "Multiple help with additional unicode args" "$BINARY a sčččř d f g h j k l p i y t r r e w q --help --help" "$EXPECTED_HELP"
+
+run_fail_test "No argument" "$BINARY"
+run_fail_test "Invalid argument" "$BINARY kez-expression"
+run_fail_test "Missing value key-expression" "$BINARY key-expression"
+run_fail_test "Missing value derive-key" "$BINARY derive-key"
+run_fail_test "Missing value script-expression" "$BINARY script-expression"
+run_fail_test "Multiple flags script-expression" "$BINARY script-expression --compute-checksum --verify-checksum"
+run_fail_test "Multiple flags script-expression invalid value" "$BINARY script-expression --compute-checksum --verify-checksum 123"
+run_fail_test "Unicode script-expression" "$BINARY script-expression čččáu"
+run_fail_test "Unicode key-expression" "$BINARY key-expression čččáu"
+run_fail_test "Unicode derive-key" "$BINARY derive-key čččáu"
+run_fail_test "Invalid unicode value key-expression" "$BINARY key-expression ččč"
+
+
 #------------------------------- SCRIPT-EXPRESSION TESTS -------------------------------
 
 PUB_KEY1="xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8"
