@@ -1,5 +1,5 @@
 # Project for class PV286 - Secure Coding Principles and Practices
-This Project was an assignment for class Project for class PV286 - Secure Coding Principles and Practices at Faculty of Informatics at Masaryk University in Brno. Full assignment is available in [ASSIGNMENT.md](https://gitlab.fi.muni.cz/pv286/projects/-/blob/main/2025-bip380/README.md).
+This Project was an assignment for class Project for class PV286 - Secure Coding Principles and Practices at Faculty of Informatics at Masaryk University in Brno. Full assignment is available in [ASSIGNMENT.md](assignment.md).
 
 Project aims to create CLI application based on [Bitcoin Improvement Proposal 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) and further
 implement parts of the [Bitcoin Improvement Proposal 380](https://github.com/bitcoin/bips/blob/master/bip-0380.mediawiki).
